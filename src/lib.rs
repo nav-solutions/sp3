@@ -3,6 +3,15 @@
 #![doc = include_str!("../README.md")]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
+/*
+ * RINEX is part of the rtk-rs framework.
+ * Authors: Guillaume W. Bres <guillaume.bressaix@gmail.com> et al.
+ * (cf. https://github.com/rtk-rs/rinex/graphs/contributors)
+ * This framework is shipped under Mozilla Public V2 license.
+ *
+ * Documentation: https://github.com/rtk-rs/sp3
+ */
+
 extern crate gnss_rs as gnss;
 
 use itertools::Itertools;

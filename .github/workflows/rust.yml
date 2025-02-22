@@ -1,4 +1,4 @@
-name: Rust
+name: CI
 
 on:
   push:
@@ -19,11 +19,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: cargo build --verbose
+      run: cargo build
+    - name: Build
+      run: cargo build --all-features
     - name: Run tests
-      run: cargo test --verbose
-    - name: Run tests (all features)
-      run: cargo test --all-features --verbose
+      run: cargo test --all-features
     - name: Coding style
       run: cargo fmt --all -- --check
     - name: Documentation
