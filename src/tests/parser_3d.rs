@@ -10,16 +10,14 @@ mod test {
     fn sp3d_txt() {
         let path = PathBuf::new()
             .join(env!("CARGO_MANIFEST_DIR"))
-            .join("..")
-            .join("test_resources")
-            .join("SP3")
+            .join("data")
             .join("sp3d.txt");
 
         let sp3 = SP3::from_file(&path);
 
         assert!(
             sp3.is_ok(),
-            "failed to parse test_resources/SP3/sp3d.txt: {:?}",
+            "failed to parse data/sp3d.txt: {:?}",
             sp3.err()
         );
 

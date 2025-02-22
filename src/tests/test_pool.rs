@@ -6,11 +6,7 @@ mod test {
     #[test]
     #[cfg(feature = "flate2")]
     fn gzip_data() {
-        let prefix = PathBuf::new()
-            .join(env!("CARGO_MANIFEST_DIR"))
-            .join("..")
-            .join("test_resources")
-            .join("SP3");
+        let prefix = PathBuf::new().join(env!("CARGO_MANIFEST_DIR")).join("data");
 
         for file in [
             "EMR0OPSULT_20232391800_02D_15M_ORB.SP3.gz",
@@ -33,11 +29,7 @@ mod test {
 
     #[test]
     fn data_folder() {
-        let prefix = PathBuf::new()
-            .join(env!("CARGO_MANIFEST_DIR"))
-            .join("..")
-            .join("test_resources")
-            .join("SP3");
+        let prefix = PathBuf::new().join(env!("CARGO_MANIFEST_DIR")).join("data");
 
         for file in [
             "co108870.sp3",

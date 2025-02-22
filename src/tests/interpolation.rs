@@ -12,9 +12,7 @@ mod test {
     fn even_interpolation_order() {
         let path = PathBuf::new()
             .join(env!("CARGO_MANIFEST_DIR"))
-            .join("..")
-            .join("test_resources")
-            .join("SP3")
+            .join("data")
             .join("EMR0OPSULT_20232391800_02D_15M_ORB.SP3.gz");
 
         let sp3 = SP3::from_gzip_file(&path).unwrap();
@@ -30,9 +28,7 @@ mod test {
     fn interpolation_feasibility() {
         let path = PathBuf::new()
             .join(env!("CARGO_MANIFEST_DIR"))
-            .join("..")
-            .join("test_resources")
-            .join("SP3")
+            .join("data")
             .join("EMR0OPSULT_20232391800_02D_15M_ORB.SP3.gz");
 
         let sp3 = SP3::from_gzip_file(&path).unwrap();
