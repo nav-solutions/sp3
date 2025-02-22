@@ -1,11 +1,11 @@
 # SP3
 
 [![crates.io](https://img.shields.io/crates/v/sp3.svg)](https://crates.io/crates/sp3)
-[![Rust](https://github.com/rtk-rs/actions/workflows/rust.yml/badge.svg)](https://github.com/rtk-rs/rinex/actions/workflows/rust.yml)
+[![Rust](https://github.com/rtk-rs/sp3/actions/workflows/rust.yml/badge.svg)](https://github.com/rtk-rs/sp3/actions/workflows/rust.yml)
 [![crates.io](https://docs.rs/sp3/badge.svg)](https://docs.rs/sp3/)
 [![crates.io](https://img.shields.io/crates/d/sp3.svg)](https://crates.io/crates/sp3)
 
-[![License](https://img.shields.io/badge/license-MPL_2.0-orange?style=for-the-badge&logo=mozilla)](https://github.com/rtk-rs/qc-traits/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-MPL_2.0-orange?style=for-the-badge&logo=mozilla)](https://github.com/rtk-rs/sp3/blob/main/LICENSE)
 
 SP3 Precise GNSS Orbit file parsing, analysis & production. 
 
