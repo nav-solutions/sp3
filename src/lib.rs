@@ -4,7 +4,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 /*
- * RINEX is part of the rtk-rs framework.
+ * SP3 is part of the rtk-rs framework.
  * Authors: Guillaume W. Bres <guillaume.bressaix@gmail.com> et al.
  * (cf. https://github.com/rtk-rs/rinex/graphs/contributors)
  * This framework is shipped under Mozilla Public V2 license.
