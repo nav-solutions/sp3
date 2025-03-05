@@ -28,7 +28,9 @@ jobs:
           cargo login $TOKEN
           cargo publish --allow-dirty
   
-  build:
+  archive:
+    runs-on: ubuntu-latest
+    name: Archive
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -68,7 +70,7 @@ jobs:
           
   release:
     runs-on: ubuntu-latest
-    needs: ['build']
+    needs: ['archive']
     # continue even though we failed to download or upload one
     # or more artefacts
     continue-on-error: true
