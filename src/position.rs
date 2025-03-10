@@ -181,7 +181,7 @@ mod test {
                 false,
                 true,
                 false,
-            )
+            ),
         ] {
             let sv = SV::from_str(sv).unwrap();
             let entry = PositionEntry::from_str(content).unwrap();
