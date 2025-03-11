@@ -11,7 +11,10 @@ mod test {
     #[cfg(feature = "qc")]
     #[cfg(feature = "flate2")]
     fn merge_failure() {
-        let test_pool = PathBuf::new().join(env!("CARGO_MANIFEST_DIR")).join("data");
+        let test_pool = PathBuf::new()
+            .join(env!("CARGO_MANIFEST_DIR"))
+            .join("data/SP3")
+            .join("C");
 
         let path_a = test_pool
             .clone()
@@ -44,7 +47,10 @@ mod test {
     #[cfg(feature = "qc")]
     #[cfg(feature = "flate2")]
     fn esa0opsrap_esa0opsult_2023() {
-        let test_pool = PathBuf::new().join(env!("CARGO_MANIFEST_DIR")).join("data");
+        let test_pool = PathBuf::new()
+            .join(env!("CARGO_MANIFEST_DIR"))
+            .join("data/SP3")
+            .join("C");
 
         let path_a = test_pool
             .clone()

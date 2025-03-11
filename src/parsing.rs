@@ -71,7 +71,7 @@ fn parse_epoch(content: &str, timescale: TimeScale) -> Result<Epoch, ParsingErro
 impl SP3 {
     /// Parse [SP3] data from local file.
     pub fn from_file(path: impl AsRef<Path>) -> Result<Self, Error> {
-        let fd = File::open(path).expect("file is not readable");
+        let fd = File::open(path).unwrap_or_else(|e| panic!("File open error: {}", e));
         let mut reader = BufReader::new(fd);
         Self::from_reader(&mut reader)
     }
@@ -80,7 +80,7 @@ impl SP3 {
     #[cfg_attr(docsrs, doc(cfg(feature = "flate2")))]
     /// Parse [SP3] data from gzip encoded local file.
     pub fn from_gzip_file(path: impl AsRef<Path>) -> Result<Self, Error> {
-        let fd = File::open(path).expect("file is not readable");
+        let fd = File::open(path).unwrap_or_else(|e| panic!("File open error: {}", e));
         let fd = GzDecoder::new(fd);
         let mut reader = BufReader::new(fd);
         Self::from_reader(&mut reader)
