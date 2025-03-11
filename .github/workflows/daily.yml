@@ -29,9 +29,6 @@ jobs:
       with:
         toolchain: stable
         override: true
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
     
     - name: ${{ matrix.name }} 
       run: |
@@ -47,9 +44,7 @@ jobs:
       with:
         toolchain: stable
         override: true
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
+    
     - uses: actions-rs/cargo@v1
       name: Test (all features)
       with:
