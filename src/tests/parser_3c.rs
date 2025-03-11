@@ -11,7 +11,8 @@ mod test {
     fn esa0opsrap_20232339_01d_15m() {
         let path = PathBuf::new()
             .join(env!("CARGO_MANIFEST_DIR"))
-            .join("data")
+            .join("data/SP3")
+            .join("C")
             .join("ESA0OPSRAP_20232390000_01D_15M_ORB.SP3.gz");
 
         let sp3 = SP3::from_gzip_file(&path).unwrap();

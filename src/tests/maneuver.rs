@@ -6,8 +6,9 @@ use std::str::FromStr;
 fn satellite_maneuver_flag() {
     let path = PathBuf::new()
         .join(env!("CARGO_MANIFEST_DIR"))
-        .join("data")
-        .join("sp3d.txt");
+        .join("data/SP3")
+        .join("D")
+        .join("example.txt");
 
     let sp3 = SP3::from_file(&path).unwrap();
 
