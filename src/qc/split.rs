@@ -1,5 +1,6 @@
-use crate::prelude::{Epoch, Header, SP3};
-use qc_traits::QcSplit;
+use std::collections::BTreeMap;
+
+use crate::prelude::{Duration, Epoch, Header, QcSplit, SP3Entry, SP3Key, SP3};
 
 impl QcSplit for Header {
     fn split_mut(&mut self, t: Epoch) -> Self {
@@ -26,6 +27,13 @@ impl QcSplit for Header {
 
         rhs
     }
+
+    fn split_even_dt(&self, _: Duration) -> Vec<Self>
+    where
+        Self: Sized,
+    {
+        vec![self.clone()]
+    }
 }
 
 impl QcSplit for SP3 {
@@ -35,5 +43,34 @@ impl QcSplit for SP3 {
         self.data.retain(|k, _| k.epoch <= t);
         rhs.data.retain(|k, _| k.epoch > t);
         rhs
+    }
+
+    fn split_even_dt(&self, dt: Duration) -> Vec<Self>
+    where
+        Self: Sized,
+    {
+        let mut t = self.first_epoch();
+
+        let mut data_sets = Vec::<BTreeMap<SP3Key, SP3Entry>>::new();
+        let mut map = BTreeMap::<SP3Key, SP3Entry>::new();
+
+        for (k, v) in self.data.iter() {
+            if k.epoch > t + dt {
+                data_sets.push(map.clone());
+                t = k.epoch;
+                map.clear();
+            }
+
+            map.insert(k.clone(), v.clone());
+        }
+
+        data_sets
+            .iter()
+            .map(|set| SP3 {
+                header: self.header.clone(),
+                comments: self.comments.clone(),
+                data: set.clone(),
+            })
+            .collect()
     }
 }

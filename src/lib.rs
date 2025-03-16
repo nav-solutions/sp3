@@ -65,8 +65,8 @@ pub mod prelude {
 
     #[cfg(feature = "qc")]
     pub use qc_traits::{
-        QcDecimationFilter, QcFilter, QcFilterType, QcMerge, QcPreprocessing, QcRepair, QcScope,
-        QcSplit, QcSubset,
+        QcDecimationFilter, QcFilter, QcFilterType, QcMerge, QcMergeError, QcPreprocessing,
+        QcRepair, QcScope, QcSplit, QcSubset,
     };
 }
 
