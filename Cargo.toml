@@ -16,16 +16,11 @@ exclude = [
 ]
 
 [features]
-default = ["flate2"] # gzip files by default
+default = ["flate2", "qc"] # gzip files by default
 
-# File Merging and other high level methods
+# File Merging, preprocessing and other options
 qc = [
     "gnss-qc-traits",
-]
-
-# (Pre)Processing methods like data masking 
-processing = [
-    "qc",
 ]
 
 [package.metadata.docs.rs]
@@ -40,7 +35,7 @@ hifitime = "4.0"
 anise = { version = "0.5.3", optional = true }
 
 gnss-rs = { version = "2.3.5", features = ["serde"] }
-gnss-qc-traits = { path = "../qc-traits", optional = true }
+gnss-qc-traits = { git = "https://github.com/rtk-rs/qc-traits", optional = true }
 
 flate2 = { version = "1", optional = true, default-features = false, features = ["zlib"] }
 serde = { version = "1.0", optional = true, default-features = false, features = ["derive"] }

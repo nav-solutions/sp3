@@ -92,7 +92,6 @@ This library comes with a few features
 - `serde` will unlock internal structure serdes ops
 - `anise` feature will unlock Elevation and Azimuth attitudes (heaviest dependency).
 - `qc` option will unlock basic file management options like Merge(A, B) or Split (timewise)
-- `processing` relies on `qc` and unlocks file preprocessing, like resampling and data masking
 - interpolation methods are proposed by default (they do not involve other dependencies)
 
 ## Default features
@@ -182,11 +181,11 @@ We propose a similar API for clock interpolation as the attitude interpolation.
 
 ## QC: File Merging
 
-Merge two files together, for example to create a context spanning 48 hours
+Merge two files together, for example to create a 48 hour time frame:
 
 ```rust
 use std::path::PathBuf;
-use sp3::prelude::{SP3, Merge};
+use sp3::prelude::{SP3, QcMerge};
 
 let folder = PathBuf::new()
     .join(env!("CARGO_MANIFEST_DIR"))

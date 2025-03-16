@@ -1,6 +1,6 @@
-use qc_traits::{QcRework, QcField};
+use qc_traits::{QcField, QcRework};
 
-use crate::{SP3, Header};
+use crate::{Header, SP3};
 
 impl QcRework for SP3 {
     fn add_mut(&mut self, field: &QcField) {

@@ -64,7 +64,10 @@ pub mod prelude {
     pub use hifitime::{Duration, Epoch, TimeScale};
 
     #[cfg(feature = "qc")]
-    pub use qc_traits::{QcMerge, QcRepair, QcSplit};
+    pub use qc_traits::{
+        QcDecimationFilter, QcFilter, QcFilterType, QcMerge, QcPreprocessing, QcRepair, QcScope,
+        QcSplit, QcSubset,
+    };
 }
 
 /// [SP3Entry] indexer
@@ -757,5 +760,12 @@ impl SP3 {
         t: Epoch,
     ) -> Option<Vector3D> {
         self.satellite_position_lagrangian_interpolation(sv, t, 17)
+    }
+
+    /// Overwrites [Header] section and returns a new [SP3]
+    pub fn with_header(&self, header: Header) -> Self {
+        let mut s = self.clone();
+        s.header = header;
+        s
     }
 }

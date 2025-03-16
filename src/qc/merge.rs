@@ -3,7 +3,6 @@ use crate::prelude::{Constellation, Header, SP3};
 use qc_traits::{QcMerge, QcMergeError};
 
 impl QcMerge for Header {
-
     fn merge_mut(&mut self, rhs: &Self) -> Result<(), QcMergeError> {
         // Verifications
         if self.agency != rhs.agency {
