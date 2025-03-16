@@ -6,7 +6,7 @@
 /*
  * SP3 is part of the rtk-rs framework.
  * Authors: Guillaume W. Bres <guillaume.bressaix@gmail.com> et al.
- * (cf. https://github.com/rtk-rs/rinex/graphs/contributors)
+ * (cf. https://github.com/rtk-rs/sp3/graphs/contributors)
  * This framework is shipped under Mozilla Public V2 license.
  *
  * Documentation: https://github.com/rtk-rs/sp3
@@ -30,10 +30,6 @@ use thiserror::Error;
 #[cfg(feature = "qc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "qc")))]
 mod qc;
-
-#[cfg(feature = "processing")]
-#[cfg_attr(docsrs, doc(cfg(feature = "processing")))]
-mod processing;
 
 #[cfg(feature = "anise")]
 use anise::{
@@ -68,10 +64,7 @@ pub mod prelude {
     pub use hifitime::{Duration, Epoch, TimeScale};
 
     #[cfg(feature = "qc")]
-    pub use gnss_qc_traits::Merge;
-
-    #[cfg(feature = "processing")]
-    pub use gnss_qc_traits::Split;
+    pub use qc_traits::{QcMerge, QcRepair, QcSplit};
 }
 
 /// [SP3Entry] indexer

@@ -3,7 +3,7 @@
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
-    use qc_traits::Merge;
+    use qc_traits::QcMerge;
     use std::path::PathBuf;
     use std::str::FromStr;
 

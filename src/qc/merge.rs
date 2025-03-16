@@ -1,27 +1,19 @@
 use crate::prelude::{Constellation, Header, SP3};
 
-use qc_traits::{Merge, MergeError};
+use qc_traits::{QcMerge, QcMergeError};
 
-impl Merge for Header {
-    fn merge(&self, rhs: &Self) -> Result<Self, MergeError>
-    where
-        Self: Sized,
-    {
-        let mut lhs = self.clone();
-        lhs.merge_mut(rhs)?;
-        Ok(lhs)
-    }
+impl QcMerge for Header {
 
-    fn merge_mut(&mut self, rhs: &Self) -> Result<(), MergeError> {
+    fn merge_mut(&mut self, rhs: &Self) -> Result<(), QcMergeError> {
         // Verifications
         if self.agency != rhs.agency {
-            return Err(MergeError::DataProviderMismatch);
+            return Err(QcMergeError::DataProviderMismatch);
         }
         if self.timescale != rhs.timescale {
-            return Err(MergeError::TimescaleMismatch);
+            return Err(QcMergeError::TimescaleMismatch);
         }
         if self.coord_system != rhs.coord_system {
-            return Err(MergeError::ReferenceFrameMismatch);
+            return Err(QcMergeError::ReferenceFrameMismatch);
         }
 
         // "upgrade" constellation
@@ -57,13 +49,8 @@ impl Merge for Header {
     }
 }
 
-impl Merge for SP3 {
-    fn merge(&self, rhs: &Self) -> Result<Self, MergeError> {
-        let mut s = self.clone();
-        s.merge_mut(rhs)?;
-        Ok(s)
-    }
-    fn merge_mut(&mut self, rhs: &Self) -> Result<(), MergeError> {
+impl QcMerge for SP3 {
+    fn merge_mut(&mut self, rhs: &Self) -> Result<(), QcMergeError> {
         self.header.merge_mut(&rhs.header)?;
 
         for (key, entry) in &rhs.data {
