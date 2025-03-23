@@ -35,7 +35,8 @@ hifitime = "4.0"
 anise = { version = "0.5.3", optional = true }
 
 gnss-rs = { version = "2.3.5", features = ["serde"] }
-gnss-qc-traits = { git = "https://github.com/rtk-rs/qc-traits", optional = true }
+
+gnss-qc-traits = { git = "https://github.com/rtk-rs/qc-traits", branch = "repair_rework", optional = true }
 
 flate2 = { version = "1", optional = true, default-features = false, features = ["zlib"] }
 serde = { version = "1.0", optional = true, default-features = false, features = ["derive"] }
