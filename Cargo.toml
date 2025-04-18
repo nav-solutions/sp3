@@ -16,7 +16,7 @@ exclude = [
 ]
 
 [package.metadata]
-msrv = "1.78"
+msrv = "1.81"
 
 [package.metadata.docs.rs]
 all-features = true
