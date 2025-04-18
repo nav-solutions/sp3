@@ -13,7 +13,6 @@ env:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +20,18 @@ jobs:
       with:
         submodules: recursive
         fetch-depth: 0
+
+    - uses: actions-rs/cargo@v1
+      name: Linter 
+      with:
+        command: fmt
+        args: --all -- --check
+    
+    - uses: actions-rs/toolchain@v1
+      name: Install Rust
+      with:
+        toolchain: 1.81.0
+        override: true
 
     - name: Build
       run: cargo build
@@ -30,9 +41,6 @@ jobs:
 
     - name: Run tests
       run: cargo test --all-features
-
-    - name: Coding style
-      run: cargo fmt --all -- --check
 
     - name: Documentation
       run: cargo doc --all-features
