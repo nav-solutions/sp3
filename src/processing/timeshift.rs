@@ -21,7 +21,7 @@ impl Timeshift for SP3 {
         );
 
         // convert
-        if let Some(converted) = solver.epoch_time_correction(epoch, target) {
+        if let Some(converted) = solver.precise_epoch_correction(epoch, target) {
             let mjd = converted.to_mjd_utc_days();
             let (week, tow) = converted.to_time_of_week();
 
@@ -36,7 +36,7 @@ impl Timeshift for SP3 {
                 let mut key = k.clone();
 
                 key.epoch = solver
-                    .epoch_time_correction(k.epoch, target)
+                    .precise_epoch_correction(k.epoch, target)
                     .expect("internal error: SP3 with inconsisten time system");
 
                 rec.insert(key, value.clone());
