@@ -583,8 +583,23 @@ impl SP3 {
     ) -> Box<dyn Iterator<Item = (Epoch, SV, Vector3D)> + '_> {
         Box::new(self.data.iter().filter_map(|(k, v)| {
             if !v.maneuver {
-                let (vx_dm_s, vy_dm_s, vz_dm_s) = v.velocity_km_s?;
-                Some((k.epoch, k.sv, (vx_dm_s, vy_dm_s, vz_dm_s)))
+                let velocity_km_s = v.velocity_km_s?;
+                Some((k.epoch, k.sv, velocity_km_s))
+            } else {
+                None
+            }
+        }))
+    }
+
+    /// Forms an absolute position (in km ECEF) and instant. velocity vector (in km.s⁻¹) [Iterator].
+    pub fn satellites_pos_vel_km_iter(
+        &self,
+    ) -> Box<dyn Iterator<Item = (Epoch, SV, Vector3D, Vector3D)> + '_> {
+        Box::new(self.data.iter().filter_map(|(k, v)| {
+            if !v.maneuver {
+                let position_km = v.position_km;
+                let velocity_km = v.velocity_km_s?;
+                Some((k.epoch, k.sv, position_km, velocity_km))
             } else {
                 None
             }
