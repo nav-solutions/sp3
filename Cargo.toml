@@ -39,11 +39,9 @@ processing = [
 [dependencies]
 thiserror = "2"
 itertools = "0.14"
-
-hifitime = { git = "https://github.com/nyx-space/hifitime", branch = "master", features = ["serde", "std"] }
-anise = { git = "https://github.com/nyx-space/anise", branch = "dep/hifitime-github", optional = true }
-
-gnss-rs = { git = "https://github.com/rtk-rs/gnss", branch = "main", features = ["serde"] }
+gnss-rs = { version = "2.4.0", features = ["serde"] }
+hifitime = { version = "4.1.0", features = ["serde", "std"] }
+anise = { git = "https://github.com/nyx-space/anise", branch = "dep/hifitime_4_1_0", optional = true }
 gnss-qc-traits = { git = "https://github.com/rtk-rs/qc-traits", branch = "main", optional = true }
 
 flate2 = { version = "1", optional = true, default-features = false, features = ["zlib"] }
