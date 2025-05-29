@@ -9,7 +9,7 @@ use crate::{
     prelude::{Constellation, Duration, ParsingError, TimeScale, SV},
 };
 
-#[cfg(docsrs)]
+#[cfg(doc)]
 use crate::prelude::Epoch;
 
 #[cfg(feature = "serde")]

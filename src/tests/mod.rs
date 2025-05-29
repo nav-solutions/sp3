@@ -7,6 +7,9 @@ mod test_pool;
 #[cfg(feature = "qc")]
 mod merge;
 
+#[cfg(feature = "processing")]
+mod substract;
+
 //#[cfg(feature = "qc")]
 //mod decimation;
 
