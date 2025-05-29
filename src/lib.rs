@@ -45,6 +45,7 @@ use anise::{
 #[cfg(test)]
 mod tests;
 
+mod entry;
 mod header;
 mod parsing;
 mod position;
@@ -56,198 +57,37 @@ use serde::{Deserialize, Serialize};
 use header::Header;
 use hifitime::Unit;
 
+use entry::SP3Entry;
+
 type Vector3D = (f64, f64, f64);
 
 pub mod prelude {
     pub use crate::{
+        entry::SP3Entry,
         header::{version::Version, DataType, Header, OrbitType},
-        Error, ParsingError, SP3Entry, SP3Key, SP3,
+        Error, ParsingError, SP3Key, SP3,
     };
-    // Pub re-export
-    pub use gnss::prelude::{Constellation, SV};
-    pub use hifitime::{Duration, Epoch, TimeScale};
 
     #[cfg(feature = "qc")]
     pub use gnss_qc_traits::Merge;
 
     #[cfg(feature = "processing")]
     pub use gnss_qc_traits::Split;
+
+    // Pub re-export
+    pub use gnss::prelude::{Constellation, SV};
+    pub use hifitime::{Duration, Epoch, TimeScale};
 }
 
-/// [SP3Entry] indexer
+/// SP3 dataset is a list of [SP3Entry] indexed by [SP3Key].
 #[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SP3Key {
     /// Spacecraft described as [SV]
     pub sv: SV,
+
     /// Epoch
     pub epoch: Epoch,
-}
-
-/// [SP3Entry] record file content, sorted per [SP3Key]
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-pub struct SP3Entry {
-    /// ECEF position in kilometers with 10⁻³ precision.
-    pub position_km: Vector3D,
-    /// ECEF velocity vectori in km.s⁻¹.
-    pub velocity_km_s: Option<Vector3D>,
-    /// True if the state vector is predicted
-    pub orbit_prediction: bool,
-    /// True if vehicle being maneuvered (rocket truster)
-    /// since last state.
-    pub maneuver: bool,
-    /// Discontinuity in the satellite clock correction
-    /// (for example: internal clock swap)
-    pub clock_event: bool,
-    /// True when the clock state is actually predicted
-    pub clock_prediction: bool,
-    /// Clock offset correction, in microsecond with 10⁻¹² precision.
-    pub clock_us: Option<f64>,
-    /// Clock drift in nanoseconds with 10⁻¹⁶ precision.
-    pub clock_drift_ns: Option<f64>,
-}
-
-impl SP3Entry {
-    /// Builds new [SP3Entry] with "true" position and all other
-    /// fields are unknown.
-    pub fn from_position_km(position_km: Vector3D) -> Self {
-        Self {
-            position_km,
-            clock_us: None,
-            maneuver: false,
-            velocity_km_s: None,
-            clock_drift_ns: None,
-            clock_prediction: false,
-            orbit_prediction: false,
-            clock_event: false,
-        }
-    }
-
-    /// Builds new [SP3Entry] with position prediction, in kilometers.
-    pub fn from_predicted_position_km(position_km: Vector3D) -> Self {
-        Self {
-            position_km,
-            clock_us: None,
-            maneuver: false,
-            velocity_km_s: None,
-            clock_drift_ns: None,
-            clock_prediction: false,
-            orbit_prediction: true,
-            clock_event: false,
-        }
-    }
-
-    /// Builds new [SP3Entry] with "true" position and velocity vector,
-    /// any other fields are unknown.
-    pub fn from_position_velocity_km_km_s(position_km: Vector3D, velocity_km_s: Vector3D) -> Self {
-        Self {
-            position_km,
-            velocity_km_s: Some(velocity_km_s),
-            clock_us: None,
-            maneuver: false,
-            clock_drift_ns: None,
-            clock_prediction: false,
-            orbit_prediction: false,
-            clock_event: false,
-        }
-    }
-
-    /// Builds new [SP3Entry] with predicted position and velocity vectors,
-    /// all other fields are unknown.
-    pub fn from_predicted_position_velocity_km_km_s(
-        position_km: Vector3D,
-        velocity_km_s: Vector3D,
-    ) -> Self {
-        Self {
-            position_km,
-            clock_us: None,
-            maneuver: false,
-            clock_drift_ns: None,
-            velocity_km_s: Some(velocity_km_s),
-            clock_prediction: false,
-            orbit_prediction: true,
-            clock_event: false,
-        }
-    }
-
-    /// Copies and returns [SP3Entry] with "true" position vector.
-    pub fn with_position_km(&self, position_km: Vector3D) -> Self {
-        let mut s = self.clone();
-        s.position_km = position_km;
-        s.orbit_prediction = false;
-        s
-    }
-
-    /// Copies and returns [SP3Entry] with predicted position vector.
-    pub fn with_predicted_position_km(&self, position_km: Vector3D) -> Self {
-        let mut s = self.clone();
-        s.position_km = position_km;
-        s.orbit_prediction = true;
-        s
-    }
-
-    /// Copies and returns [SP3Entry] with "true" velocity vector
-    pub fn with_velocity_km_s(&self, velocity_km_s: Vector3D) -> Self {
-        let mut s = self.clone();
-        s.velocity_km_s = Some(velocity_km_s);
-        s.orbit_prediction = false;
-        s
-    }
-
-    /// Copies and returns [SP3Entry] with predicted velocity vector
-    pub fn with_predicted_velocity_km_s(&self, velocity_km_s: Vector3D) -> Self {
-        let mut s = self.clone();
-        s.velocity_km_s = Some(velocity_km_s);
-        s.orbit_prediction = true;
-        s
-    }
-
-    /// Copies and returns [Self] with "true" clock offset in seconds
-    pub fn with_clock_offset_s(&self, offset_s: f64) -> Self {
-        let mut s = self.clone();
-        s.clock_us = Some(offset_s * 1.0E6);
-        s.clock_prediction = false;
-        s
-    }
-
-    /// Copies and returns [Self] with predicted clock offset in seconds
-    pub fn with_predicted_clock_offset_s(&self, offset_s: f64) -> Self {
-        let mut s = self.clone();
-        s.clock_us = Some(offset_s * 1.0E6);
-        s.clock_prediction = true;
-        s
-    }
-
-    /// Copies and returns [Self] with "true" clock offset in microseconds
-    pub fn with_clock_offset_us(&self, offset_us: f64) -> Self {
-        let mut s = self.clone();
-        s.clock_us = Some(offset_us);
-        s.clock_prediction = false;
-        s
-    }
-
-    /// Copies and returns [Self] with predicted clock offset in microseconds
-    pub fn with_predicted_clock_offset_us(&self, offset_us: f64) -> Self {
-        let mut s = self.clone();
-        s.clock_us = Some(offset_us);
-        s.clock_prediction = true;
-        s
-    }
-
-    /// Copies and returns [Self] with clock drift in seconds
-    pub fn with_clock_drift_s(&self, drift_s: f64) -> Self {
-        let mut s = self.clone();
-        s.clock_drift_ns = Some(drift_s * 1.0E9);
-        s
-    }
-
-    /// Copies and returns [Self] with clock drift in nanoseconds
-    pub fn with_clock_drift_ns(&self, drift_ns: f64) -> Self {
-        let mut s = self.clone();
-        s.clock_drift_ns = Some(drift_ns);
-        s
-    }
 }
 
 #[derive(Default, Clone, Debug)]
