@@ -214,6 +214,33 @@ let sp3 = sp3_a.merge(&sp3_b);
 assert!(sp3.is_ok());
 ```
 
+## QC: Timescale Transposition
+
+Use the `Timeshift` trait to transpose the SP3 into other timescales. Coarse
+and precise transpositions are both supported. The precise transposition method
+requires a correction database.
+
+```rust
+use sp3::prelude::*;
+
+let path = PathBuf::new()
+    .join(env!("CARGO_MANIFEST_DIR"))
+    .join("data/SP3")
+    .join("C")
+    .join("ESA0OPSRAP_20232390000_01D_15M_ORB.SP3.gz");
+
+// Typical GPST SP3
+let gpst_sp3 = SP3::from_gzip_file(&path)
+    .unwrap();
+
+// Transpose to GST
+let gst_sp3 = gpst_sp3.timeshift(TimeScale::GST);
+
+// Dump as GST file
+gst_sp3.to_file("/tmp/gst.txt")
+    .unwrap();
+```
+
 ## License
 
 This library is part of the [RTK-rs framework](https://github.com/rtk-rs) which
