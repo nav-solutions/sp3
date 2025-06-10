@@ -69,10 +69,10 @@ assert_eq!(sp3.header.timescale, TimeScale::GPST);
 assert_eq!(sp3.header.constellation, Constellation::Mixed);
 
 // Week counter, in given [TimeScale]
-assert_eq!(sp3.header.week_counter, 2277);
-assert_eq!(sp3.header.week_sow, 0.0_f64);
+assert_eq!(sp3.header.week, 2277);
+assert_eq!(sp3.header.week_nanos, 0);
 
-assert_eq!(sp3.header.epoch_interval, Duration::from_seconds(900.0_f64));
+assert_eq!(sp3.header.sampling_period, Duration::from_seconds(900.0_f64));
 
 // Data exploitation
 for (epoch, sv, (x_km_ecef, y_km_ecef, z_km_ecef)) in sp3.satellites_position_km_iter() {
