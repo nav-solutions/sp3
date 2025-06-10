@@ -71,7 +71,6 @@ impl SP3 {
             let formatter = Formatter::new(epoch, efmt);
 
             // let (y, m, d, hh, mm, ss, nanos) = epoch.to_gregorian_utc();
-
             // writeln!(
             //     writer,
             //     "*  {:04} {:2} {:2} {:2} {:2} {:2}.{:08}",
@@ -83,7 +82,6 @@ impl SP3 {
             //     ss,
             //     nanos / 10
             // )?;
-
             writeln!(writer, "*  {}", formatter,)?;
 
             for key in self
@@ -149,7 +147,7 @@ mod test {
             panic!("SP3/failed to parse back: {}", e);
         });
 
-        // assert_eq!(parsed, sp3);
+        assert_eq!(parsed, sp3);
     }
 
     #[test]
@@ -164,6 +162,6 @@ mod test {
             panic!("SP3/failed to parse back: {}", e);
         });
 
-        // assert_eq!(parsed, sp3);
+        assert_eq!(parsed, sp3);
     }
 }

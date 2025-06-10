@@ -178,6 +178,31 @@ impl Header {
         line2.format(writer)?;
         write!(writer, "\n")?;
 
+        // file descriptor support is incomplete
+        let gnss_timescale = match self.timescale {
+            TimeScale::GPST => "GPS",
+            TimeScale::GST => "GAL",
+            TimeScale::QZSST => "QZS",
+            TimeScale::UTC => "UTC",
+            _ => "TAI",
+        };
+
+        // TODO: `L` exists here in case only LEO vehicles are to be found
+        writeln!(
+            writer,
+            "%c {:x}  cc {} ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc",
+            self.constellation, gnss_timescale,
+        )?;
+
+        writeln!(
+            writer,
+            "%c cc cc ccc ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc"
+        )?;
+
+        // other fields are not supported
+        // %i
+        // %f
+
         Ok(())
     }
 }

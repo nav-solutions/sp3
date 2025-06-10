@@ -109,6 +109,7 @@ impl SP3 {
                 header.agency = l1.agency.to_string();
                 header.num_epochs = l1.num_epochs;
                 header.fit_type = l1.fit_type.to_string();
+                header.release_epoch = l1.epoch;
             }
 
             if is_header_line2(line) {
