@@ -38,8 +38,8 @@ mod test {
         assert_eq!(sp3.header.constellation, Constellation::Mixed);
         assert_eq!(sp3.header.agency, "ESOC");
 
-        assert_eq!(sp3.header.week_counter, 2277);
-        assert_eq!(sp3.header.week_sow, 0.0_f64);
+        assert_eq!(sp3.header.week, 2277);
+        assert_eq!(sp3.header.week_nanos, 0);
         assert_eq!(sp3.header.mjd, 60183.0);
 
         assert_eq!(sp3.header.epoch_interval, Duration::from_seconds(900.0_f64));

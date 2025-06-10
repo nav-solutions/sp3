@@ -111,11 +111,11 @@ impl SP3 {
 
             if is_header_line2(line) {
                 let l2 = Line2::from_str(line)?;
-                let ((week_counter, week_sow), epoch_interval, (mjd_int, mjd_fract)) =
-                    l2.to_parts();
+                let (week, sow_nanos, epoch_interval, (mjd_int, mjd_fract)) = l2.to_parts();
 
-                header.week_counter = week_counter;
-                header.week_sow = week_sow;
+                header.week = week;
+                header.week_nanos = sow_nanos.0 as u64 * 1_000_000_000;
+                header.week_nanos += sow_nanos.1;
 
                 header.epoch_interval = epoch_interval;
 

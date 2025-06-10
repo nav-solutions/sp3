@@ -41,11 +41,6 @@ impl std::str::FromStr for Line1 {
             &line[23..31].trim(),
         );
 
-        println!(
-            "\"{}\" \"{}\" \"{}\" \"{}\" \"{}\" \"{}\" \"{}\"",
-            y, m, d, hh, mm, ss, nanos
-        );
-
         let y = y.parse::<i32>().or(Err(ParsingError::Epoch))?;
         let m = m.parse::<u8>().or(Err(ParsingError::Epoch))?;
         let d = d.parse::<u8>().or(Err(ParsingError::Epoch))?;

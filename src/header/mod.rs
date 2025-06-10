@@ -117,10 +117,10 @@ pub struct Header {
     pub timescale: TimeScale,
 
     /// [TimeScale] week counter.
-    pub week_counter: u32,
+    pub week: u32,
 
-    /// [TimeScale] seconds in current week.
-    pub week_sow: f64,
+    /// Total number of nanoseconds in current [TimeScale] week.
+    pub week_nanos: u64,
 
     /// Datetime of first record entry, expressed as integral and frational MJD in [TimeScale].
     pub mjd: f64,

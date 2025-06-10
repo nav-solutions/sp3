@@ -46,13 +46,16 @@ pub enum ParsingError {
     NumberEpoch(String),
 
     #[error("failed to parse week counter")]
-    WeekCounter(String),
+    WeekCounter,
 
-    #[error("failed to parse hifitime::Epoch")]
+    #[error("failed to parse seconds of week")]
+    WeekSeconds,
+
+    #[error("failed to parse Epoch")]
     Epoch,
 
-    #[error("failed to parse sample rate from \"{0}\"")]
-    EpochInterval(String),
+    #[error("failed to parse sampling period")]
+    SamplingPeriod,
 
     #[error("failed to parse mjd start \"{0}\"")]
     Mjd(String),
