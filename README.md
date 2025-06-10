@@ -83,6 +83,16 @@ for (epoch, sv, (x_km_ecef, y_km_ecef, z_km_ecef)) in sp3.satellites_position_km
 for (epoch, sv, clock) in sp3.satellites_clock_offset_sec_iter() {
 
 }
+
+// Dump to file
+sp3.to_file("/tmp/test.txt")
+    .unwrap();
+
+let parsed_back = SP3::from_file("/tmp/test.txt")
+    .unwrap();
+
+// Reciprocity
+assrt_eq!(sp3, parsed_back);
 ```
 
 ## Lib features
@@ -108,14 +118,10 @@ The `Nyx-Space/ANISE` feature is the heaviest library option.
 
 ## Satellite attitude interpolation
 
-Satellite (SV) attitude interpolation is a major topic in SP3 processing. 
-Because quite often, you will have to match data provided by SP3 (high precision) other
-datasets, oftentimes expressed in different timescales and most often sampled at higher rate.
-
-Indeed, SP3 is published by laboratories with a typical fit rate of 15'. 
-
-To answer the requirement of SP3 processing inside a broader geodetic processing pipeline,
-this library proposes a few sets of method
+Satellite (SV) attitude interpolation is a major topic in SP3 processing.  
+Typically, SP3 data has to be matched (in time) with other data which requires interpolation.
+In order to preserve the quality of the SP3 fit, it is recommended to use a high order Lagrangian
+interpolation. This library provides SP3 interpolation as is, because it does not involve external libraries:
 
 - `[SP3.satellite_position_interp()]` will design the interpolation kernel
 to which you can apply your custom interpolation function
@@ -130,10 +136,8 @@ method with a order of 11, which is typically used to preserve SP3 precision
 method with a order of 17, which is way more than enough and should be used in processing
 pipelines where processing speed and resource consumption is not an issue. 
 
-Note that SP3 provides attitude with 10⁻³m precision.
-
-The (timewise) interpolation kernel is only feasible for odd interpolation order (at the moment),
-for simplicity. The extracted kernel is therefore:
+:warning: our interpolation method does not support even interpolation orders.
+The extracted kernel is therefore:
 
 - `tmin = (N +1)/2 * τ`
 - `tmax =  T(n-1) - (N +1)/2 * τ`
