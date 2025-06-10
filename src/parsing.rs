@@ -39,27 +39,13 @@ fn new_epoch(content: &str) -> bool {
 
 /// Parses [Epoch] from standard SP3 format
 fn parse_epoch(content: &str, timescale: TimeScale) -> Result<Epoch, ParsingError> {
-    let y = u32::from_str(content[0..4].trim())
-        .or(Err(ParsingError::EpochYear(content[0..4].to_string())))?;
-
-    let m = u32::from_str(content[4..7].trim())
-        .or(Err(ParsingError::EpochMonth(content[4..7].to_string())))?;
-
-    let d = u32::from_str(content[7..10].trim())
-        .or(Err(ParsingError::EpochDay(content[7..10].to_string())))?;
-
-    let hh = u32::from_str(content[10..13].trim())
-        .or(Err(ParsingError::EpochHours(content[10..13].to_string())))?;
-
-    let mm = u32::from_str(content[13..16].trim())
-        .or(Err(ParsingError::EpochMinutes(content[13..16].to_string())))?;
-
-    let ss = u32::from_str(content[16..19].trim())
-        .or(Err(ParsingError::EpochSeconds(content[16..19].to_string())))?;
-
-    let _ss_fract = f64::from_str(content[20..27].trim()).or(Err(
-        ParsingError::EpochMilliSeconds(content[20..27].to_string()),
-    ))?;
+    let y = u32::from_str(content[0..4].trim()).or(Err(ParsingError::EpochParsing))?;
+    let m = u32::from_str(content[4..7].trim()).or(Err(ParsingError::EpochParsing))?;
+    let d = u32::from_str(content[7..10].trim()).or(Err(ParsingError::EpochParsing))?;
+    let hh = u32::from_str(content[10..13].trim()).or(Err(ParsingError::EpochParsing))?;
+    let mm = u32::from_str(content[13..16].trim()).or(Err(ParsingError::EpochParsing))?;
+    let ss = u32::from_str(content[16..19].trim()).or(Err(ParsingError::EpochParsing))?;
+    let _ss_fract = f64::from_str(content[20..27].trim()).or(Err(ParsingError::EpochParsing))?;
 
     Epoch::from_str(&format!(
         "{:04}-{:02}-{:02}T{:02}:{:02}:{:02} {}",
@@ -115,23 +101,26 @@ impl SP3 {
 
             if is_header_line1(line) && !is_header_line2(line) {
                 let l1 = Line1::from_str(line)?;
-                let (version, data_type, coord_system, orbit_type, agency) = l1.to_parts();
-                header.version = version;
-                header.data_type = data_type;
-                header.coord_system = coord_system;
-                header.orbit_type = orbit_type;
-                header.agency = agency;
+
+                header.version = l1.version;
+                header.data_type = l1.data_type;
+                header.coord_system = l1.coord_system;
+                header.orbit_type = l1.orbit_type;
+                header.agency = l1.agency.to_string();
+                header.num_epochs = l1.num_epochs;
+                header.fit_type = l1.fit_type.to_string();
+                header.release_epoch = l1.epoch;
             }
 
             if is_header_line2(line) {
                 let l2 = Line2::from_str(line)?;
-                let ((week_counter, week_sow), epoch_interval, (mjd_int, mjd_fract)) =
-                    l2.to_parts();
+                let (week, sow_nanos, epoch_interval, (mjd_int, mjd_fract)) = l2.to_parts();
 
-                header.week_counter = week_counter;
-                header.week_sow = week_sow;
+                header.week = week;
+                header.week_nanos = sow_nanos.0 as u64 * 1_000_000_000;
+                header.week_nanos += sow_nanos.1;
 
-                header.epoch_interval = epoch_interval;
+                header.sampling_period = epoch_interval;
 
                 header.mjd = mjd_int as f64;
                 header.mjd += mjd_fract;

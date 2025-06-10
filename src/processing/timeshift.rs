@@ -15,8 +15,8 @@ impl Timeshift for SP3 {
 
     fn timeshift_mut(&mut self, solver: &GnssAbsoluteTime, target: hifitime::TimeScale) {
         let epoch = Epoch::from_time_of_week(
-            self.header.week_counter,
-            (self.header.week_sow * 1.0E9).round() as u64,
+            self.header.week,
+            self.header.week_nanos,
             self.header.timescale,
         );
 
@@ -26,8 +26,8 @@ impl Timeshift for SP3 {
             let (week, tow) = converted.to_time_of_week();
 
             self.header.mjd = mjd;
-            self.header.week_counter = week;
-            self.header.week_sow = (tow / 1_000_000_000) as f64;
+            self.header.week = week;
+            self.header.week_nanos = tow;
 
             // timeshift
             let mut rec = BTreeMap::<SP3Key, SP3Entry>::new();

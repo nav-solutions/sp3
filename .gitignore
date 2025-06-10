@@ -15,3 +15,7 @@ Cargo.lock
 
 *.swo
 *.swp
+
+test-c.sp3
+test-d.sp3
+output.sp3

@@ -27,7 +27,7 @@ impl Masking for Header {
                         .retain(|sv| constellations.contains(&sv.constellation));
                 },
                 FilterItem::DurationItem(dt) => {
-                    self.epoch_interval = std::cmp::max(self.epoch_interval, *dt);
+                    self.sampling_period = std::cmp::max(self.sampling_period, *dt);
                 },
                 _ => {},
             },
