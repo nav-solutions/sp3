@@ -71,6 +71,7 @@ impl SP3 {
             let formatter = Formatter::new(epoch, efmt);
 
             // let (y, m, d, hh, mm, ss, nanos) = epoch.to_gregorian_utc();
+
             // writeln!(
             //     writer,
             //     "*  {:04} {:2} {:2} {:2} {:2} {:2}.{:08}",
@@ -165,5 +166,21 @@ mod test {
 
         // TODO: achieve this equality
         // assert_eq!(parsed, sp3);
+    }
+
+    #[test]
+    fn sp3_c_predicted_orbits() {
+        let sp3 =
+            SP3::from_gzip_file("data/SP3/C/ESA0OPSULT_20232320600_02D_15M_ORB.SP3.gz").unwrap();
+
+        sp3.to_file("test-c.sp3").unwrap_or_else(|e| {
+            panic!("SP3/formatting issue: {}", e);
+        });
+
+        let parsed = SP3::from_file("test-c.sp3").unwrap_or_else(|e| {
+            panic!("SP3/failed to parse back: {}", e);
+        });
+
+        assert_eq!(parsed, sp3);
     }
 }

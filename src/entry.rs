@@ -199,20 +199,33 @@ impl SP3Entry {
         if let Some(value) = self.clock_us {
             formatted.push_str(&format!("{}", CoordsFormatter::new(value)));
         } else {
-            if data_type == 'V'
-                || self.clock_event
-                || self.clock_event
-                || self.clock_prediction
-                || self.orbit_prediction
-                || self.maneuver
-            {
-                formatted.push_str("          ");
-            }
-        };
+            formatted.push_str("                            ");
+        }
+
+        if self.clock_event {
+            formatted.push('E');
+        } else {
+            formatted.push(' ');
+        }
+
+        if self.clock_prediction {
+            formatted.push_str("P  ");
+        } else {
+            formatted.push_str("   ");
+        }
 
         //10  9 11 102 EP  MP
+        if self.maneuver {
+            formatted.push('M');
+        } else {
+            formatted.push(' ');
+        }
 
-        writeln!(w, "{}", formatted)?;
+        if self.orbit_prediction {
+            formatted.push('P');
+        }
+
+        writeln!(w, "{}", formatted.trim_end())?;
         Ok(())
     }
 
@@ -293,4 +306,227 @@ impl SP3Entry {
         s.clock_drift_ns = Some(drift_ns);
         s
     }
+}
+
+#[cfg(test)]
+mod test {
+    use super::SP3Entry;
+    use crate::prelude::SV;
+    use crate::tests::formatting::Utf8Buffer;
+
+    use std::io::BufWriter;
+    use std::str::FromStr;
+
+    #[test]
+    fn basic_data_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        for (data, expected) in [(
+            SP3Entry {
+                position_km: (15402.861499, 21607.418873, -992.500669),
+                velocity_km_s: None,
+                orbit_prediction: false,
+                maneuver: false,
+                clock_drift_ns: None,
+                clock_event: false,
+                clock_prediction: false,
+                clock_us: Some(10.571484),
+            },
+            "PG01  15402.861499  21607.418873   -992.500669     10.571484\n",
+        )] {
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn basic_noclock_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        for (data, expected) in [(
+            SP3Entry {
+                position_km: (15402.861499, 21607.418873, -992.500669),
+                velocity_km_s: None,
+                orbit_prediction: false,
+                maneuver: false,
+                clock_drift_ns: None,
+                clock_event: false,
+                clock_prediction: false,
+                clock_us: None,
+            },
+            "PG01  15402.861499  21607.418873   -992.500669\n",
+        )] {
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn basic_maneuver_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        for (data, expected) in [(
+            SP3Entry {
+                position_km: (-12593.593500, 10170.327650, -20354.534400),
+                velocity_km_s: None,
+                orbit_prediction: false,
+                maneuver: true,
+                clock_drift_ns: None,
+                clock_event: false,
+                clock_prediction: false,
+                clock_us: None,
+            },
+            "PG01 -12593.593500  10170.327650 -20354.534400                                M\n",
+        )] {
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn clock_prediction_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        for (data, expected) in [(
+            SP3Entry {
+                position_km: (-11044.805800, -10475.672350, 21929.418200),
+                velocity_km_s: None,
+                orbit_prediction: false,
+                maneuver: false,
+                clock_drift_ns: None,
+                clock_event: false,
+                clock_prediction: true,
+                clock_us: None,
+            },
+            "PG01 -11044.805800 -10475.672350  21929.418200                             P\n",
+        )] {
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn orbit_prediction_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        for (data, expected) in [(
+            SP3Entry {
+                position_km: (-11044.805800, -10475.672350, 21929.418200),
+                velocity_km_s: None,
+                orbit_prediction: true,
+                maneuver: false,
+                clock_drift_ns: None,
+                clock_event: false,
+                clock_prediction: false,
+                clock_us: None,
+            },
+            "PG01 -11044.805800 -10475.672350  21929.418200                                 P\n",
+        )] {
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn dual_clock_orbit_prediction_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        for (data, expected) in [(
+            SP3Entry {
+                position_km: (-11044.805800, -10475.672350, 21929.418200),
+                velocity_km_s: None,
+                orbit_prediction: true,
+                maneuver: false,
+                clock_drift_ns: None,
+                clock_event: false,
+                clock_prediction: true,
+                clock_us: None,
+            },
+            "PG01 -11044.805800 -10475.672350  21929.418200                             P   P\n",
+        )] {
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn basic_velocity_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        for (data, expected) in [(
+            SP3Entry {
+                position_km: (15402.861499, 21607.418873, -992.500669),
+                velocity_km_s: None,
+                orbit_prediction: false,
+                maneuver: false,
+                clock_drift_ns: None,
+                clock_event: false,
+                clock_prediction: false,
+                clock_us: None,
+            },
+            "PG01  15402.861499  21607.418873   -992.500669\n",
+        )] {
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    //"PG01 -11044.805800 -10475.672350  21929.418200    189.163300 18 18 18 219  P   P"
+    //"VG04 -22859.768469  -8524.538983 -15063.229095     -3.292980 14 14 14 191"
 }

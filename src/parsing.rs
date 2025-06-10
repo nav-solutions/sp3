@@ -114,16 +114,14 @@ impl SP3 {
 
             if is_header_line2(line) {
                 let l2 = Line2::from_str(line)?;
-                let (week, sow_nanos, epoch_interval, (mjd_int, mjd_fract)) = l2.to_parts();
+                header.week = l2.week;
+                header.week_nanos = l2.sow_nanos.0 as u64 * 1_000_000_000;
+                header.week_nanos += l2.sow_nanos.1;
 
-                header.week = week;
-                header.week_nanos = sow_nanos.0 as u64 * 1_000_000_000;
-                header.week_nanos += sow_nanos.1;
+                header.sampling_period = l2.sampling_period;
 
-                header.sampling_period = epoch_interval;
-
-                header.mjd = mjd_int as f64;
-                header.mjd += mjd_fract;
+                header.mjd = l2.mjd.0 as f64;
+                header.mjd += l2.mjd.1;
             }
 
             if file_descriptor(line) {
