@@ -106,7 +106,7 @@ impl SP3 {
 
     /// Dumps [SP3] into writable local file (as readable ASCII UTF-8),
     /// using efficient buffered formatting.
-    /// This is the mirror operation of [Self::to_file]
+    /// This is the mirror operation of [Self::from_file]
     /// ```
     /// use sp3::prelude::*;
     ///

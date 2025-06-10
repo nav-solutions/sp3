@@ -82,5 +82,18 @@ mod test {
                 "PCV:IGS20_2274 OL/AL:EOT11A   NONE     YN ORB:CoN CLK:CoN",
             ],
         );
+
+        let attributes = sp3.prod_attributes
+            .expect("attributes should exist for this file!");
+
+        // "ESA0OPSRAP_20232390000_01D_15M_ORB.SP3.gz
+        assert_eq!(attributes.agency, "ESA");
+        assert_eq!(attributes.batch_id, 0);
+        assert_eq!(attributes.availability, Availability::Rapid);
+        assert_eq!(attributes.release_date.year, 2023);
+        assert_eq!(attributes.release_date.doy, 239);
+        assert_eq!(attributes.release_period, ReleasePeriod::Daily);
+        assert_eq!(attributes.sampling_period, sp3.header.sampling_period);
+        assert!(attributes.gzip_compressed);
     }
 }

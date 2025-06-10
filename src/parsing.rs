@@ -16,7 +16,8 @@ use crate::{
     },
     position::{position_entry, PositionEntry},
     prelude::{
-        Constellation, Epoch, Error, Header, ParsingError, SP3Entry, SP3Key, TimeScale, SP3, SV,
+        Constellation, Epoch, Error, Header, ParsingError, ProductionAttributes, SP3Entry, SP3Key,
+        TimeScale, SP3, SV,
     },
     velocity::{velocity_entry, VelocityEntry},
 };
@@ -57,19 +58,37 @@ fn parse_epoch(content: &str, timescale: TimeScale) -> Result<Epoch, ParsingErro
 impl SP3 {
     /// Parse [SP3] data from local file.
     pub fn from_file(path: impl AsRef<Path>) -> Result<Self, Error> {
-        let fd = File::open(path).unwrap_or_else(|e| panic!("File open error: {}", e));
+
+        let fd = File::open(&path).unwrap_or_else(|e| panic!("File open error: {}", e));
         let mut reader = BufReader::new(fd);
-        Self::from_reader(&mut reader)
+        let mut sp3 = Self::from_reader(&mut reader)?;
+
+        if let Some(filename) = path.as_ref().file_name() {
+            if let Ok(attributes) = ProductionAttributes::from_str(&filename.to_string_lossy()) {
+                sp3.prod_attributes = Some(attributes);
+            }
+        }
+
+        Ok(sp3)
     }
 
     #[cfg(feature = "flate2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "flate2")))]
     /// Parse [SP3] data from gzip encoded local file.
     pub fn from_gzip_file(path: impl AsRef<Path>) -> Result<Self, Error> {
-        let fd = File::open(path).unwrap_or_else(|e| panic!("File open error: {}", e));
+        let fd = File::open(&path).unwrap_or_else(|e| panic!("File open error: {}", e));
         let fd = GzDecoder::new(fd);
         let mut reader = BufReader::new(fd);
-        Self::from_reader(&mut reader)
+
+        let mut sp3 = Self::from_reader(&mut reader)?;
+
+        if let Some(filename) = path.as_ref().file_name() {
+            if let Ok(attributes) = ProductionAttributes::from_str(&filename.to_string_lossy()) {
+                sp3.prod_attributes = Some(attributes);
+            }
+        }
+
+        Ok(sp3)
     }
 
     /// Parse [SP3] data from [Read]able I/O.
@@ -261,6 +280,7 @@ impl SP3 {
             header,
             data,
             comments,
+            prod_attributes: None,
         })
     }
 }

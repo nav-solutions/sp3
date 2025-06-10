@@ -93,6 +93,19 @@ let parsed_back = SP3::from_file("/tmp/test.txt")
 
 // Reciprocity
 assert_eq!(sp3, parsed_back);
+
+let attributes = sp3.prod_attributes
+    .expect("exists for files that follow standards conventions!");
+
+// "ESA0OPSRAP_20232390000_01D_15M_ORB.SP3.gz
+assert_eq!(attributes.agency, "ESA");
+assert_eq!(attributes.batch_id, 0);
+assert_eq!(attributes.availability, Availability::Rapid);
+assert_eq!(attributes.release_date.year, 2023);
+assert_eq!(attributes.release_date.doy, 239);
+assert_eq!(attributes.release_period, ReleasePeriod::Daily);
+assert_eq!(attributes.sampling_period, sp3.header.sampling_period);
+assert!(attributes.gzip_compressed);
 ```
 
 ## Lib features

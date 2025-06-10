@@ -12,6 +12,25 @@
  * Documentation: https://github.com/rtk-rs/sp3
  */
 
+//       u   -- undifferenced carrier phase
+//      du  -- change in u with time
+//      s   -- 2-receiver/1-satellite carrier phase
+//      ds  -- change on s with time
+//      d   -- 2-receiver/2-satellite carrier phase
+//      dd  -- change in d with time
+//      U   -- undifferenced code phase
+//      dU  -- change in U with time
+//      S   -- 2-receiver/1-satellite code phase
+//      dS  -- change in S with time
+//      D   -- 2-receiver/2-satellite code phase
+//      dD  -- change in D with time
+//       +  -- type separator
+//
+//      Combinations such as "__u+U" seem reasonable.  If the
+// measurements used were complex combinations of standard types,
+// then one could use "mixed" where mixed could be explained on the
+// comment lines.
+
 extern crate gnss_rs as gnss;
 
 use itertools::Itertools;
@@ -21,6 +40,7 @@ extern crate gnss_qc_traits as qc_traits;
 
 use gnss::prelude::{Constellation, SV};
 use hifitime::Epoch;
+use prelude::ProductionAttributes;
 
 use std::collections::BTreeMap;
 
@@ -48,6 +68,7 @@ mod formatting;
 mod header;
 mod parsing;
 mod position;
+mod production;
 mod velocity;
 
 #[cfg(feature = "serde")]
@@ -66,6 +87,7 @@ pub mod prelude {
         entry::SP3Entry,
         errors::{Error, FormattingError, ParsingError},
         header::{version::Version, DataType, Header, OrbitType},
+        production::{Availability, ProductionAttributes, ReleaseDate, ReleasePeriod},
         SP3Key, SP3,
     };
 
@@ -99,6 +121,10 @@ pub struct SP3 {
 
     /// File header comments, stored as is.
     pub comments: Vec<String>,
+
+    /// [ProductionAttributes] from file names that
+    /// follow the standard conventions
+    pub prod_attributes: Option<ProductionAttributes>,
 
     /// File content are [SP3Entry]s sorted per [SP3Key]
     pub data: BTreeMap<SP3Key, SP3Entry>,

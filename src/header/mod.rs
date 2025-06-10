@@ -143,6 +143,7 @@ pub struct Header {
 }
 
 impl Header {
+    /// Format this SP3 [Header] according to standard specifications.
     pub fn format<W: Write>(&self, writer: &mut BufWriter<W>) -> Result<(), FormattingError> {
         let line1 = Line1 {
             version: self.version,
