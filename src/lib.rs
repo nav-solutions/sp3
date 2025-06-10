@@ -73,10 +73,7 @@ pub mod prelude {
     };
 
     #[cfg(feature = "qc")]
-    pub use gnss_qc_traits::{
-        Merge,
-        Timeshift,
-    };
+    pub use gnss_qc_traits::{Merge, Timeshift};
 
     #[cfg(feature = "processing")]
     pub use gnss_qc_traits::Split;
