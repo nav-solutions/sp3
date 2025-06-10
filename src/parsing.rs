@@ -39,27 +39,13 @@ fn new_epoch(content: &str) -> bool {
 
 /// Parses [Epoch] from standard SP3 format
 fn parse_epoch(content: &str, timescale: TimeScale) -> Result<Epoch, ParsingError> {
-    let y = u32::from_str(content[0..4].trim())
-        .or(Err(ParsingError::EpochYear(content[0..4].to_string())))?;
-
-    let m = u32::from_str(content[4..7].trim())
-        .or(Err(ParsingError::EpochMonth(content[4..7].to_string())))?;
-
-    let d = u32::from_str(content[7..10].trim())
-        .or(Err(ParsingError::EpochDay(content[7..10].to_string())))?;
-
-    let hh = u32::from_str(content[10..13].trim())
-        .or(Err(ParsingError::EpochHours(content[10..13].to_string())))?;
-
-    let mm = u32::from_str(content[13..16].trim())
-        .or(Err(ParsingError::EpochMinutes(content[13..16].to_string())))?;
-
-    let ss = u32::from_str(content[16..19].trim())
-        .or(Err(ParsingError::EpochSeconds(content[16..19].to_string())))?;
-
-    let _ss_fract = f64::from_str(content[20..27].trim()).or(Err(
-        ParsingError::EpochMilliSeconds(content[20..27].to_string()),
-    ))?;
+    let y = u32::from_str(content[0..4].trim()).or(Err(ParsingError::EpochParsing))?;
+    let m = u32::from_str(content[4..7].trim()).or(Err(ParsingError::EpochParsing))?;
+    let d = u32::from_str(content[7..10].trim()).or(Err(ParsingError::EpochParsing))?;
+    let hh = u32::from_str(content[10..13].trim()).or(Err(ParsingError::EpochParsing))?;
+    let mm = u32::from_str(content[13..16].trim()).or(Err(ParsingError::EpochParsing))?;
+    let ss = u32::from_str(content[16..19].trim()).or(Err(ParsingError::EpochParsing))?;
+    let _ss_fract = f64::from_str(content[20..27].trim()).or(Err(ParsingError::EpochParsing))?;
 
     Epoch::from_str(&format!(
         "{:04}-{:02}-{:02}T{:02}:{:02}:{:02} {}",

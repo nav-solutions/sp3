@@ -20,12 +20,9 @@ use itertools::Itertools;
 extern crate gnss_qc_traits as qc_traits;
 
 use gnss::prelude::{Constellation, SV};
-use hifitime::{Epoch, ParsingError as EpochParsingError};
+use hifitime::Epoch;
 
-use std::{collections::BTreeMap, io::Error as IoError};
-
-use gnss_rs::constellation::ParsingError as ConstellationParsingError;
-use thiserror::Error;
+use std::collections::BTreeMap;
 
 #[cfg(feature = "qc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "qc")))]
@@ -46,6 +43,8 @@ use anise::{
 mod tests;
 
 mod entry;
+mod errors;
+mod formatting;
 mod header;
 mod parsing;
 mod position;
@@ -58,14 +57,16 @@ use header::Header;
 use hifitime::Unit;
 
 use entry::SP3Entry;
+use errors::*;
 
 type Vector3D = (f64, f64, f64);
 
 pub mod prelude {
     pub use crate::{
         entry::SP3Entry,
+        errors::{Error, FormattingError, ParsingError},
         header::{version::Version, DataType, Header, OrbitType},
-        Error, ParsingError, SP3Key, SP3,
+        SP3Key, SP3,
     };
 
     #[cfg(feature = "qc")]
@@ -95,68 +96,12 @@ pub struct SP3Key {
 pub struct SP3 {
     /// File [Header]
     pub header: Header,
+
     /// File header comments, stored as is.
     pub comments: Vec<String>,
+
     /// File content are [SP3Entry]s sorted per [SP3Key]
     pub data: BTreeMap<SP3Key, SP3Entry>,
-}
-
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("Parsing error: {0}")]
-    ParsingError(#[from] ParsingError),
-    #[error("Epoch parsing error: {0}")]
-    HifitimeParsingError(#[from] EpochParsingError),
-    #[error("Constellation parsing error: {0}")]
-    ConstellationParsing(#[from] ConstellationParsingError),
-    #[error("File i/o error: {0}")]
-    FileIo(#[from] IoError),
-}
-
-#[derive(Debug, Error)]
-pub enum ParsingError {
-    #[error("Non supported SP3 revision")]
-    NonSupportedRevision,
-    #[error("Unknown SP3 orbit type")]
-    UnknownOrbitType,
-    #[error("Unknown SP3 data type")]
-    UnknownDataType,
-    #[error("malformed header line #1")]
-    MalformedH1,
-    #[error("malformed header line #2")]
-    MalformedH2,
-    #[error("malformed %c line \"{0}\"")]
-    MalformedDescriptor(String),
-    #[error("failed to parse epoch year from \"{0}\"")]
-    EpochYear(String),
-    #[error("failed to parse epoch month from \"{0}\"")]
-    EpochMonth(String),
-    #[error("failed to parse epoch day from \"{0}\"")]
-    EpochDay(String),
-    #[error("failed to parse epoch hours from \"{0}\"")]
-    EpochHours(String),
-    #[error("failed to parse epoch minutes from \"{0}\"")]
-    EpochMinutes(String),
-    #[error("failed to parse epoch seconds from \"{0}\"")]
-    EpochSeconds(String),
-    #[error("failed to parse epoch milliseconds from \"{0}\"")]
-    EpochMilliSeconds(String),
-    #[error("failed to parse number of epochs \"{0}\"")]
-    NumberEpoch(String),
-    #[error("failed to parse week counter")]
-    WeekCounter(String),
-    #[error("failed to parse hifitime::Epoch")]
-    Epoch,
-    #[error("failed to parse sample rate from \"{0}\"")]
-    EpochInterval(String),
-    #[error("failed to parse mjd start \"{0}\"")]
-    Mjd(String),
-    #[error("failed to parse sv from \"{0}\"")]
-    SV(String),
-    #[error("failed to parse (x, y, or z) coordinates from \"{0}\"")]
-    Coordinates(String),
-    #[error("failed to parse clock data from \"{0}\"")]
-    Clock(String),
 }
 
 use crate::prelude::DataType;

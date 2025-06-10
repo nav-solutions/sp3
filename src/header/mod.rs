@@ -2,9 +2,12 @@
 pub(crate) mod line1;
 pub(crate) mod line2;
 
+use std::io::{BufWriter, Write};
+
 pub mod version;
 
 use crate::{
+    errors::FormattingError,
     header::version::Version,
     prelude::{Constellation, Duration, ParsingError, TimeScale, SV},
 };
@@ -92,28 +95,45 @@ impl std::str::FromStr for OrbitType {
 pub struct Header {
     /// File revision as [Version]
     pub version: Version,
+
     /// [DataType] used in this file.
     /// [DataType::Velocity] means velocity vector will be provided in following record.
     pub data_type: DataType,
+
     /// Coordinates system description.
     pub coord_system: String,
+
     /// [OrbitType] used in the fitting process prior publication.
     pub orbit_type: OrbitType,
+
     /// Agency providing this record.
     pub agency: String,
+
     /// Type of [Constellation] found in this record.
     /// For example [Constellation::GPS] means you will only find GPS satellite vehicles.
     pub constellation: Constellation,
+
     /// [TimeScale] that applies to all following [Epoch]s.
     pub timescale: TimeScale,
+
     /// [TimeScale] week counter.
     pub week_counter: u32,
+
     /// [TimeScale] seconds in current week.
     pub week_sow: f64,
+
     /// Datetime of first record entry, expressed as integral and frational MJD in [TimeScale].
     pub mjd: f64,
+
     /// Sampling period, as [Duration].
     pub epoch_interval: Duration,
+
     /// [SV] to be found in this record.
     pub satellites: Vec<SV>,
+}
+
+impl Header {
+    pub fn format<W: Write>(&self, writer: &mut BufWriter<W>) -> Result<(), FormattingError> {
+        Ok(())
+    }
 }
