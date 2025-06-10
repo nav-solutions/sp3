@@ -199,7 +199,7 @@ mod test {
                 OrbitType::FIT,
             ),
         ] {
-            let line1 = Line1::from_str(&line).unwrap();
+            let line1 = Line1::from_str(line).unwrap();
             let epoch = Epoch::from_str(epoch_str).unwrap();
 
             assert_eq!(line1.version, version);

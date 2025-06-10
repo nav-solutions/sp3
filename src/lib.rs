@@ -12,25 +12,6 @@
  * Documentation: https://github.com/rtk-rs/sp3
  */
 
-//       u   -- undifferenced carrier phase
-//      du  -- change in u with time
-//      s   -- 2-receiver/1-satellite carrier phase
-//      ds  -- change on s with time
-//      d   -- 2-receiver/2-satellite carrier phase
-//      dd  -- change in d with time
-//      U   -- undifferenced code phase
-//      dU  -- change in U with time
-//      S   -- 2-receiver/1-satellite code phase
-//      dS  -- change in S with time
-//      D   -- 2-receiver/2-satellite code phase
-//      dD  -- change in D with time
-//       +  -- type separator
-//
-//      Combinations such as "__u+U" seem reasonable.  If the
-// measurements used were complex combinations of standard types,
-// then one could use "mixed" where mixed could be explained on the
-// comment lines.
-
 extern crate gnss_rs as gnss;
 
 use itertools::Itertools;
@@ -92,7 +73,10 @@ pub mod prelude {
     };
 
     #[cfg(feature = "qc")]
-    pub use gnss_qc_traits::Merge;
+    pub use gnss_qc_traits::{
+        Merge,
+        Timeshift,
+    };
 
     #[cfg(feature = "processing")]
     pub use gnss_qc_traits::Split;
@@ -279,7 +263,7 @@ impl SP3 {
 
     /// Returns [Epoch] [Iterator]
     pub fn epochs_iter(&self) -> impl Iterator<Item = Epoch> + '_ {
-        self.data.iter().map(|(k, _)| k.epoch).unique()
+        self.data.keys().map(|k| k.epoch).unique()
     }
 
     /// Returns a unique [Constellation] iterator
@@ -521,9 +505,7 @@ impl SP3 {
             past_t = t_i;
         }
 
-        if t_x.is_none() {
-            return None;
-        }
+        t_x?;
 
         // central point must not be too early
         if w0_len < target_len_2 {
@@ -537,10 +519,8 @@ impl SP3 {
             if w1_len < target_len_2_1 {
                 return None;
             }
-        } else {
-            if w1_len < target_len_2 {
-                return None;
-            }
+        } else if w1_len < target_len_2 {
+            return None;
         }
 
         interp(order, t, window)

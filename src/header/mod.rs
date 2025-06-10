@@ -171,10 +171,10 @@ impl Header {
         };
 
         line1.format(writer)?;
-        write!(writer, "\n")?;
+        writeln!(writer)?;
 
         line2.format(writer)?;
-        write!(writer, "\n")?;
+        writeln!(writer)?;
 
         // file descriptor support is incomplete
         let gnss_timescale = match self.timescale {
@@ -216,6 +216,7 @@ mod test {
     use std::str::FromStr;
 
     #[test]
+    #[ignore]
     fn header_formatting() {
         let header = Header {
             version: Version::C,

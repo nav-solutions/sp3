@@ -9,7 +9,7 @@ use hifitime::HifitimeError;
 use crate::prelude::SP3;
 
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 #[derive(Default, Clone, Copy, Debug, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -160,9 +160,8 @@ pub struct ProductionAttributes {
 
 impl std::fmt::Display for ProductionAttributes {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        
         let sampling_interval_mins = (self.sampling_period.to_seconds() / 60.0).round() as u16;
-        
+
         write!(
             f,
             "{}{}OPS{}_{:04}{:03}0000_{}_{:02}M_ORB.SP3",

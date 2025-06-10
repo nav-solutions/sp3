@@ -42,37 +42,27 @@ impl std::str::FromStr for PositionEntry {
         let z = f64::from_str(line[32..46].trim())
             .or(Err(ParsingError::Coordinates(line[32..46].to_string())))?;
 
-        if line_len > 51 {
-            if !line[45..52].trim().eq("999999.") {
-                // clock data present
-                let clk_data = f64::from_str(line[46..60].trim())
-                    .or(Err(ParsingError::Clock(line[46..60].to_string())))?;
-                clock_us = Some(clk_data);
-            }
+        if line_len > 51 && !line[45..52].trim().eq("999999.") {
+            // clock data present
+            let clk_data = f64::from_str(line[46..60].trim())
+                .or(Err(ParsingError::Clock(line[46..60].to_string())))?;
+            clock_us = Some(clk_data);
         }
 
-        if line_len > 74 {
-            if line[74..75].eq("E") {
-                clock_event = true;
-            }
+        if line_len > 74 && line[74..75].eq("E") {
+            clock_event = true;
         }
 
-        if line_len > 75 {
-            if line[75..76].eq("P") {
-                clock_prediction = true;
-            }
+        if line_len > 75 && line[75..76].eq("P") {
+            clock_prediction = true;
         }
 
-        if line_len > 78 {
-            if line[78..79].eq("M") {
-                maneuver = true;
-            }
+        if line_len > 78 && line[78..79].eq("M") {
+            maneuver = true;
         }
 
-        if line_len > 79 {
-            if line[79..80].eq("P") {
-                orbit_prediction = true;
-            }
+        if line_len > 79 && line[79..80].eq("P") {
+            orbit_prediction = true;
         }
 
         Ok(Self {

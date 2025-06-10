@@ -58,7 +58,6 @@ fn parse_epoch(content: &str, timescale: TimeScale) -> Result<Epoch, ParsingErro
 impl SP3 {
     /// Parse [SP3] data from local file.
     pub fn from_file(path: impl AsRef<Path>) -> Result<Self, Error> {
-
         let fd = File::open(&path).unwrap_or_else(|e| panic!("File open error: {}", e));
         let mut reader = BufReader::new(fd);
         let mut sp3 = Self::from_reader(&mut reader)?;
@@ -188,40 +187,38 @@ impl SP3 {
                         e.position_km = (entry.x_km, entry.y_km, entry.z_km);
                         e.maneuver = entry.maneuver;
                         e.orbit_prediction = entry.orbit_prediction;
-                    } else {
-                        if let Some(clk_us) = entry.clock_us {
-                            let value = if entry.orbit_prediction {
-                                SP3Entry::from_predicted_position_km((
-                                    entry.x_km, entry.y_km, entry.z_km,
-                                ))
-                            } else {
-                                SP3Entry::from_position_km((entry.x_km, entry.y_km, entry.z_km))
-                            };
-
-                            let mut value = if entry.clock_prediction {
-                                value.with_predicted_clock_offset_us(clk_us)
-                            } else {
-                                value.with_clock_offset_us(clk_us)
-                            };
-
-                            value.maneuver = entry.maneuver;
-                            value.clock_event = entry.clock_event;
-
-                            data.insert(key, value);
+                    } else if let Some(clk_us) = entry.clock_us {
+                        let value = if entry.orbit_prediction {
+                            SP3Entry::from_predicted_position_km((
+                                entry.x_km, entry.y_km, entry.z_km,
+                            ))
                         } else {
-                            let mut value = if entry.orbit_prediction {
-                                SP3Entry::from_predicted_position_km((
-                                    entry.x_km, entry.y_km, entry.z_km,
-                                ))
-                            } else {
-                                SP3Entry::from_position_km((entry.x_km, entry.y_km, entry.z_km))
-                            };
+                            SP3Entry::from_position_km((entry.x_km, entry.y_km, entry.z_km))
+                        };
 
-                            value.maneuver = entry.maneuver;
-                            value.clock_event = entry.clock_event;
+                        let mut value = if entry.clock_prediction {
+                            value.with_predicted_clock_offset_us(clk_us)
+                        } else {
+                            value.with_clock_offset_us(clk_us)
+                        };
 
-                            data.insert(key, value);
-                        }
+                        value.maneuver = entry.maneuver;
+                        value.clock_event = entry.clock_event;
+
+                        data.insert(key, value);
+                    } else {
+                        let mut value = if entry.orbit_prediction {
+                            SP3Entry::from_predicted_position_km((
+                                entry.x_km, entry.y_km, entry.z_km,
+                            ))
+                        } else {
+                            SP3Entry::from_position_km((entry.x_km, entry.y_km, entry.z_km))
+                        };
+
+                        value.maneuver = entry.maneuver;
+                        value.clock_event = entry.clock_event;
+
+                        data.insert(key, value);
                     }
                 }
             }

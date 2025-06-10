@@ -84,7 +84,8 @@ mod test {
             .join("data/SP3")
             .join("D");
 
-        for file in ["example.txt"] {
+        {
+            let file = "example.txt";
             let file_path = prefix.clone().join(file);
             println!("Parsing file \"{}\"", file_path.to_string_lossy());
             let sp3 = SP3::from_file(&file_path);

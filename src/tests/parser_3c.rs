@@ -83,7 +83,8 @@ mod test {
             ],
         );
 
-        let attributes = sp3.prod_attributes
+        let attributes = sp3
+            .prod_attributes
             .expect("attributes should exist for this file!");
 
         // "ESA0OPSRAP_20232390000_01D_15M_ORB.SP3.gz

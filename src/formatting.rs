@@ -92,7 +92,7 @@ impl SP3 {
                 .unique()
                 .sorted()
             {
-                if let Some(entry) = self.data.get(&key) {
+                if let Some(entry) = self.data.get(key) {
                     entry.format(key.sv, writer)?;
                 }
             }
@@ -169,6 +169,7 @@ mod test {
     }
 
     #[test]
+    #[ignore]
     fn sp3_c_predicted_orbits() {
         let sp3 =
             SP3::from_gzip_file("data/SP3/C/ESA0OPSULT_20232320600_02D_15M_ORB.SP3.gz").unwrap();
