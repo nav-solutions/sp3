@@ -4,16 +4,77 @@ use std::{
     path::Path,
 };
 
+use itertools::Itertools;
+
 use crate::{errors::FormattingError, prelude::SP3};
 
 #[cfg(feature = "flate2")]
 use flate2::{write::GzEncoder, Compression as GzCompression};
+
+pub(crate) struct CoordsFormatter {
+    value: f64,
+    width: usize,
+    precision: usize,
+}
+
+impl CoordsFormatter {
+    pub fn new(value: f64) -> Self {
+        Self {
+            value,
+            width: 13,
+            precision: 6,
+        }
+    }
+}
+
+impl std::fmt::Display for CoordsFormatter {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let value = self.value;
+        let sign_str = if value.is_sign_positive() { " " } else { "" };
+
+        let formatted = if value.is_sign_positive() {
+            format!(
+                "{:width$.precision$}",
+                value,
+                width = self.width,
+                precision = self.precision
+            )
+        } else {
+            format!(
+                "{:width$.precision$}",
+                value,
+                width = self.width + 1,
+                precision = self.precision
+            )
+        };
+
+        write!(f, "{}{}", sign_str, formatted)
+    }
+}
 
 impl SP3 {
     /// Formats [SP3] into writable I/O using efficient buffered writer
     /// and following standard specifications.
     pub fn format<W: Write>(&self, writer: &mut BufWriter<W>) -> Result<(), FormattingError> {
         self.header.format(writer)?;
+
+        for comment in self.comments.iter() {
+            writeln!(writer, "/* {}", comment)?;
+        }
+
+        for epoch in self.data.keys().map(|k| k.epoch).sorted() {
+            for key in self
+                .data
+                .keys()
+                .filter_map(|k| if k.epoch == epoch { Some(k) } else { None })
+                .sorted()
+            {
+                if let Some(entry) = self.data.get(&key) {
+                    entry.format(key.sv, writer)?;
+                }
+            }
+        }
+
         writer.flush()?;
         Ok(())
     }

@@ -1,10 +1,12 @@
 #[cfg(doc)]
 use crate::prelude::SP3Key;
 
-use crate::Vector3D;
+use crate::{formatting::CoordsFormatter, prelude::SV, FormattingError, Vector3D};
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+
+use std::io::{BufWriter, Write};
 
 /// SP3 record content are [SP3Entry] indexed by [SP3Key].
 #[derive(Debug, Copy, PartialEq, Clone)]
@@ -175,6 +177,27 @@ impl SP3Entry {
             orbit_prediction: true,
             clock_event: false,
         }
+    }
+
+    /// Formats this [SP3Entry] according to SP3 standards
+    pub fn format<W: Write>(&self, sv: SV, w: &mut BufWriter<W>) -> Result<(), FormattingError> {
+        let data_type = if self.velocity_km_s.is_some() || self.clock_drift_ns.is_some() {
+            'V'
+        } else {
+            'P'
+        };
+
+        let formatted = format!(
+            "{}{}{}{}{}",
+            data_type,
+            sv,
+            CoordsFormatter::new(self.position_km.0),
+            CoordsFormatter::new(self.position_km.1),
+            CoordsFormatter::new(self.position_km.2),
+        );
+
+        writeln!(w, "{}", formatted)?;
+        Ok(())
     }
 
     /// Copies and returns [SP3Entry] with "true" position vector.
