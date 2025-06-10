@@ -91,7 +91,7 @@ pub struct SP3Key {
     pub epoch: Epoch,
 }
 
-#[derive(Default, Clone, Debug)]
+#[derive(Default, Clone, PartialEq, Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SP3 {
     /// File [Header]
@@ -226,7 +226,8 @@ impl SP3 {
     /// according to the sampling interval.
     /// You should use this verification method prior any interpolation (post processing).
     pub fn has_steady_sampling(&self) -> bool {
-        let dt = self.header.epoch_interval;
+        let dt = self.header.sampling_period;
+
         let mut t = Epoch::default();
         let mut past_t = Option::<Epoch>::None;
 

@@ -62,3 +62,48 @@ impl SP3 {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::prelude::{
+        Constellation, DataType, Duration, Epoch, Header, OrbitType, TimeScale, Version, SP3, SV,
+    };
+    use crate::tests::formatting::Utf8Buffer;
+
+    use std::io::BufWriter;
+    use std::str::FromStr;
+
+    #[test]
+    fn sp3_c_formatting() {
+        let sp3 = SP3::from_file("data/SP3/C/co108870.sp3").unwrap();
+
+        let mut buffer = BufWriter::new(Utf8Buffer::new(8192));
+
+        sp3.to_file("test-c.sp3").unwrap_or_else(|e| {
+            panic!("SP3/formatting issue: {}", e);
+        });
+
+        let parsed = SP3::from_file("test-c.sp3").unwrap_or_else(|e| {
+            panic!("SP3/failed to parse back: {}", e);
+        });
+
+        assert_eq!(parsed, sp3);
+    }
+
+    #[test]
+    fn sp3_d_formatting() {
+        let sp3 = SP3::from_file("data/SP3/D/example.txt").unwrap();
+
+        let mut buffer = BufWriter::new(Utf8Buffer::new(8192));
+
+        sp3.to_file("test-d.sp3").unwrap_or_else(|e| {
+            panic!("SP3/formatting issue: {}", e);
+        });
+
+        let parsed = SP3::from_file("test-d.sp3").unwrap_or_else(|e| {
+            panic!("SP3/failed to parse back: {}", e);
+        });
+
+        assert_eq!(parsed, sp3);
+    }
+}

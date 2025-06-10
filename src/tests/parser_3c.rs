@@ -42,7 +42,10 @@ mod test {
         assert_eq!(sp3.header.week_nanos, 0);
         assert_eq!(sp3.header.mjd, 60183.0);
 
-        assert_eq!(sp3.header.epoch_interval, Duration::from_seconds(900.0_f64));
+        assert_eq!(
+            sp3.header.sampling_period,
+            Duration::from_seconds(900.0_f64)
+        );
 
         for (index, epoch) in sp3.epochs_iter().enumerate() {
             match index {

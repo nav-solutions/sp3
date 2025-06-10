@@ -11,10 +11,10 @@ impl Decimate for Header {
     fn decimate_mut(&mut self, f: &DecimationFilter) {
         match f.filter {
             DecimationFilterType::Duration(interval) => {
-                self.epoch_interval = std::cmp::max(self.epoch_interval, interval);
+                self.sampling_period = std::cmp::max(self.sampling_period, interval);
             },
             DecimationFilterType::Modulo(modulo) => {
-                self.epoch_interval = self.epoch_interval * modulo as f64;
+                self.sampling_period = self.sampling_period * modulo as f64;
             },
         }
     }

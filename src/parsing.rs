@@ -117,7 +117,7 @@ impl SP3 {
                 header.week_nanos = sow_nanos.0 as u64 * 1_000_000_000;
                 header.week_nanos += sow_nanos.1;
 
-                header.epoch_interval = epoch_interval;
+                header.sampling_period = epoch_interval;
 
                 header.mjd = mjd_int as f64;
                 header.mjd += mjd_fract;

@@ -21,7 +21,7 @@ impl std::str::FromStr for Line2 {
             return Err(ParsingError::MalformedH2);
         }
 
-        let mut week = 0_u32;
+        let week;
         let mut sow_nanos = (0_u32, 0_u64);
         let mut mjd = (0_u32, 0.0_f64);
 

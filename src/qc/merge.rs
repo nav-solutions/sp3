@@ -17,9 +17,11 @@ impl Merge for Header {
         if self.agency != rhs.agency {
             return Err(MergeError::DataProviderMismatch);
         }
+
         if self.timescale != rhs.timescale {
             return Err(MergeError::TimescaleMismatch);
         }
+
         if self.coord_system != rhs.coord_system {
             return Err(MergeError::ReferenceFrameMismatch);
         }
@@ -33,14 +35,13 @@ impl Merge for Header {
         self.version = std::cmp::min(self.version, rhs.version);
 
         // update time reference
-
         if rhs.mjd < self.mjd {
             self.mjd = rhs.mjd;
         }
 
-        if rhs.week_counter < self.week_counter {
-            self.week_counter = rhs.week_counter;
-            self.week_sow = rhs.week_sow;
+        if rhs.week < self.week {
+            self.week = rhs.week;
+            self.week_nanos = rhs.week_nanos;
         }
 
         // update SV table
@@ -51,7 +52,7 @@ impl Merge for Header {
         }
 
         // update sampling
-        self.epoch_interval = std::cmp::max(self.epoch_interval, rhs.epoch_interval);
+        self.sampling_period = std::cmp::max(self.sampling_period, rhs.sampling_period);
 
         Ok(())
     }

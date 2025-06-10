@@ -7,7 +7,7 @@ use crate::Vector3D;
 use serde::{Deserialize, Serialize};
 
 /// SP3 record content are [SP3Entry] indexed by [SP3Key].
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, PartialEq, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SP3Entry {
     /// ECEF position in kilometers with 10⁻³ precision.

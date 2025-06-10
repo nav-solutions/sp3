@@ -9,7 +9,7 @@ pub mod version;
 use crate::{
     errors::FormattingError,
     header::version::Version,
-    prelude::{Constellation, Duration, ParsingError, TimeScale, SV},
+    prelude::{Constellation, Duration, Epoch, ParsingError, TimeScale, SV},
 };
 
 #[cfg(doc)]
@@ -17,6 +17,9 @@ use crate::prelude::Epoch;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+
+use line1::Line1;
+use line2::Line2;
 
 #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -90,11 +93,15 @@ impl std::str::FromStr for OrbitType {
     }
 }
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, PartialEq, Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Header {
     /// File revision as [Version]
     pub version: Version,
+
+    /// File publication [Epoch], expressed in [Self.timescale] or
+    /// [TimeScale::GPST] for older revisions
+    pub release_epoch: Epoch,
 
     /// [DataType] used in this file.
     /// [DataType::Velocity] means velocity vector will be provided in following record.
@@ -105,6 +112,12 @@ pub struct Header {
 
     /// [OrbitType] used in the fitting process prior publication.
     pub orbit_type: OrbitType,
+
+    /// Fit-type
+    pub fit_type: String,
+
+    /// Total number of epochs
+    pub num_epochs: u64,
 
     /// Agency providing this record.
     pub agency: String,
@@ -126,7 +139,7 @@ pub struct Header {
     pub mjd: f64,
 
     /// Sampling period, as [Duration].
-    pub epoch_interval: Duration,
+    pub sampling_period: Duration,
 
     /// [SV] to be found in this record.
     pub satellites: Vec<SV>,
@@ -134,6 +147,87 @@ pub struct Header {
 
 impl Header {
     pub fn format<W: Write>(&self, writer: &mut BufWriter<W>) -> Result<(), FormattingError> {
+        let line1 = Line1 {
+            version: self.version,
+            data_type: self.data_type,
+            epoch: self.release_epoch,
+            num_epochs: self.num_epochs,
+            orbit_type: self.orbit_type,
+            agency: self.agency.to_string(),
+            fit_type: self.fit_type.to_string(),
+            coord_system: self.coord_system.to_string(),
+        };
+
+        let sow_nanos = (
+            (self.week_nanos / 1_000_000_000) as u32,
+            self.week_nanos - self.week_nanos / 1_000_000_000,
+        );
+
+        let mjd = (self.mjd.floor() as u32, (self.mjd.fract() * 10.0E7));
+
+        let line2 = Line2 {
+            week: self.week,
+            sow_nanos,
+            mjd,
+            sampling_period: self.sampling_period,
+        };
+
+        line1.format(writer)?;
+        write!(writer, "\n")?;
+
+        line2.format(writer)?;
+        write!(writer, "\n")?;
+
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::prelude::{
+        Constellation, DataType, Duration, Epoch, Header, OrbitType, TimeScale, Version, SV,
+    };
+    use crate::tests::formatting::Utf8Buffer;
+
+    use std::io::BufWriter;
+    use std::str::FromStr;
+
+    #[test]
+    fn header_formatting() {
+        let header = Header {
+            version: Version::C,
+            fit_type: "__u+U".to_string(),
+            release_epoch: Epoch::from_str("2020-01-01T00:00:00 GPST").unwrap(),
+            data_type: DataType::Position,
+            coord_system: "ITRF93".to_string(),
+            orbit_type: OrbitType::FIT,
+            num_epochs: 10,
+            agency: "GRGS".to_string(),
+            constellation: Constellation::GPS,
+            timescale: TimeScale::GPST,
+            week: 1234,
+            week_nanos: 5678,
+            mjd: 12.34,
+            sampling_period: Duration::from_seconds(900.0),
+            satellites: "G01,G02,G03,G04,G05"
+                .split(',')
+                .map(|s| SV::from_str(s).unwrap())
+                .collect(),
+        };
+
+        let mut buffer = BufWriter::new(Utf8Buffer::new(8192));
+
+        header.format(&mut buffer).unwrap_or_else(|e| {
+            panic!("Header formatting issue: {}", e);
+        });
+
+        let formatted = buffer.into_inner().unwrap();
+        let formatted = formatted.to_ascii_utf8();
+
+        assert_eq!(
+            formatted,
+            "#cP2019 12 31 23 59 42.00000000      10 __u+U ITRF93 FIT  GRGS
+## 1234      0.00000567   900.00000000 00012 33999999.0000000999999\n"
+        );
     }
 }
