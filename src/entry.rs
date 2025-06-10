@@ -187,7 +187,7 @@ impl SP3Entry {
             'P'
         };
 
-        let formatted = format!(
+        let mut formatted = format!(
             "{}{}{}{}{}",
             data_type,
             sv,
@@ -195,6 +195,20 @@ impl SP3Entry {
             CoordsFormatter::new(self.position_km.1),
             CoordsFormatter::new(self.position_km.2),
         );
+
+        if let Some(value) = self.clock_us {
+            formatted.push_str(&format!("{}", CoordsFormatter::new(value)));
+        } else {
+            if data_type == 'V'
+                || self.clock_event
+                || self.clock_event
+                || self.clock_prediction
+                || self.orbit_prediction
+                || self.maneuver
+            {
+                formatted.push_str("          ");
+            }
+        };
 
         writeln!(w, "{}", formatted)?;
         Ok(())
