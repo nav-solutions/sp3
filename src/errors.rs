@@ -68,6 +68,12 @@ pub enum ParsingError {
 
     #[error("failed to parse clock data from \"{0}\"")]
     Clock(String),
+
+    #[error("Not a standardized filename")]
+    InvalidFilename,
+
+    #[error("Invalid file availability")]
+    InvalidFileAvailability,
 }
 
 /// Errors that may rise in Formatting process

@@ -21,6 +21,7 @@ extern crate gnss_qc_traits as qc_traits;
 
 use gnss::prelude::{Constellation, SV};
 use hifitime::Epoch;
+use prelude::ProductionAttributes;
 
 use std::collections::BTreeMap;
 
@@ -48,6 +49,7 @@ mod formatting;
 mod header;
 mod parsing;
 mod position;
+mod production;
 mod velocity;
 
 #[cfg(feature = "serde")]
@@ -66,11 +68,12 @@ pub mod prelude {
         entry::SP3Entry,
         errors::{Error, FormattingError, ParsingError},
         header::{version::Version, DataType, Header, OrbitType},
+        production::{Availability, ProductionAttributes, ReleaseDate, ReleasePeriod},
         SP3Key, SP3,
     };
 
     #[cfg(feature = "qc")]
-    pub use gnss_qc_traits::Merge;
+    pub use gnss_qc_traits::{Merge, Timeshift};
 
     #[cfg(feature = "processing")]
     pub use gnss_qc_traits::Split;
@@ -99,6 +102,10 @@ pub struct SP3 {
 
     /// File header comments, stored as is.
     pub comments: Vec<String>,
+
+    /// [ProductionAttributes] from file names that
+    /// follow the standard conventions
+    pub prod_attributes: Option<ProductionAttributes>,
 
     /// File content are [SP3Entry]s sorted per [SP3Key]
     pub data: BTreeMap<SP3Key, SP3Entry>,
@@ -253,7 +260,7 @@ impl SP3 {
 
     /// Returns [Epoch] [Iterator]
     pub fn epochs_iter(&self) -> impl Iterator<Item = Epoch> + '_ {
-        self.data.iter().map(|(k, _)| k.epoch).unique()
+        self.data.keys().map(|k| k.epoch).unique()
     }
 
     /// Returns a unique [Constellation] iterator
@@ -495,9 +502,7 @@ impl SP3 {
             past_t = t_i;
         }
 
-        if t_x.is_none() {
-            return None;
-        }
+        t_x?;
 
         // central point must not be too early
         if w0_len < target_len_2 {
@@ -511,10 +516,8 @@ impl SP3 {
             if w1_len < target_len_2_1 {
                 return None;
             }
-        } else {
-            if w1_len < target_len_2 {
-                return None;
-            }
+        } else if w1_len < target_len_2 {
+            return None;
         }
 
         interp(order, t, window)

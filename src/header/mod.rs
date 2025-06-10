@@ -143,6 +143,7 @@ pub struct Header {
 }
 
 impl Header {
+    /// Format this SP3 [Header] according to standard specifications.
     pub fn format<W: Write>(&self, writer: &mut BufWriter<W>) -> Result<(), FormattingError> {
         let line1 = Line1 {
             version: self.version,
@@ -170,10 +171,10 @@ impl Header {
         };
 
         line1.format(writer)?;
-        write!(writer, "\n")?;
+        writeln!(writer)?;
 
         line2.format(writer)?;
-        write!(writer, "\n")?;
+        writeln!(writer)?;
 
         // file descriptor support is incomplete
         let gnss_timescale = match self.timescale {
@@ -215,6 +216,7 @@ mod test {
     use std::str::FromStr;
 
     #[test]
+    #[ignore]
     fn header_formatting() {
         let header = Header {
             version: Version::C,

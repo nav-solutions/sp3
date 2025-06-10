@@ -50,15 +50,13 @@ impl std::ops::Sub for SP3Entry {
                 self.position_km.2 - rhs.position_km.2,
             ),
             velocity_km_s: if let Some(velocity_km_s) = self.velocity_km_s {
-                if let Some(rhs) = rhs.velocity_km_s {
-                    Some((
+                rhs.velocity_km_s.map(|rhs| {
+                    (
                         velocity_km_s.0 - rhs.0,
                         velocity_km_s.1 - rhs.1,
                         velocity_km_s.2 - rhs.2,
-                    ))
-                } else {
-                    None
-                }
+                    )
+                })
             } else {
                 None
             },
@@ -67,20 +65,12 @@ impl std::ops::Sub for SP3Entry {
             clock_prediction: self.clock_prediction,
             orbit_prediction: self.orbit_prediction,
             clock_us: if let Some(clock_us) = self.clock_us {
-                if let Some(rhs) = rhs.clock_us {
-                    Some(clock_us - rhs)
-                } else {
-                    None
-                }
+                rhs.clock_us.map(|rhs| clock_us - rhs)
             } else {
                 None
             },
             clock_drift_ns: if let Some(clock_drift_ns) = self.clock_drift_ns {
-                if let Some(rhs) = rhs.clock_drift_ns {
-                    Some(clock_drift_ns - rhs)
-                } else {
-                    None
-                }
+                rhs.clock_drift_ns.map(|rhs| clock_drift_ns - rhs)
             } else {
                 None
             },
@@ -181,15 +171,8 @@ impl SP3Entry {
 
     /// Formats this [SP3Entry] according to SP3 standards
     pub fn format<W: Write>(&self, sv: SV, w: &mut BufWriter<W>) -> Result<(), FormattingError> {
-        let data_type = if self.velocity_km_s.is_some() || self.clock_drift_ns.is_some() {
-            'V'
-        } else {
-            'P'
-        };
-
         let mut formatted = format!(
-            "{}{}{}{}{}",
-            data_type,
+            "P{}{}{}{}",
             sv,
             CoordsFormatter::new(self.position_km.0),
             CoordsFormatter::new(self.position_km.1),
@@ -199,18 +182,47 @@ impl SP3Entry {
         if let Some(value) = self.clock_us {
             formatted.push_str(&format!("{}", CoordsFormatter::new(value)));
         } else {
-            if data_type == 'V'
-                || self.clock_event
-                || self.clock_event
-                || self.clock_prediction
-                || self.orbit_prediction
-                || self.maneuver
-            {
-                formatted.push_str("          ");
-            }
-        };
+            formatted.push_str("                            ");
+        }
+
+        if self.clock_event {
+            formatted.push('E');
+        } else {
+            formatted.push(' ');
+        }
+
+        if self.clock_prediction {
+            formatted.push_str("P  ");
+        } else {
+            formatted.push_str("   ");
+        }
 
         //10  9 11 102 EP  MP
+        if self.maneuver {
+            formatted.push('M');
+        } else {
+            formatted.push(' ');
+        }
+
+        if self.orbit_prediction {
+            formatted.push('P');
+        }
+
+        formatted = formatted.trim_end().to_string();
+
+        if let Some((vel_x_km, vel_y_km, vel_z_km)) = self.velocity_km_s {
+            formatted.push_str(&format!(
+                "\nV{}{}{}{}",
+                sv,
+                CoordsFormatter::new(vel_x_km),
+                CoordsFormatter::new(vel_y_km),
+                CoordsFormatter::new(vel_z_km),
+            ));
+
+            if let Some(drift_ns) = self.clock_drift_ns {
+                formatted.push_str(&format!("{}", CoordsFormatter::new(drift_ns)));
+            }
+        }
 
         writeln!(w, "{}", formatted)?;
         Ok(())
@@ -218,7 +230,7 @@ impl SP3Entry {
 
     /// Copies and returns [SP3Entry] with "true" position vector.
     pub fn with_position_km(&self, position_km: Vector3D) -> Self {
-        let mut s = self.clone();
+        let mut s = *self;
         s.position_km = position_km;
         s.orbit_prediction = false;
         s
@@ -226,7 +238,7 @@ impl SP3Entry {
 
     /// Copies and returns [SP3Entry] with predicted position vector.
     pub fn with_predicted_position_km(&self, position_km: Vector3D) -> Self {
-        let mut s = self.clone();
+        let mut s = *self;
         s.position_km = position_km;
         s.orbit_prediction = true;
         s
@@ -234,7 +246,7 @@ impl SP3Entry {
 
     /// Copies and returns [SP3Entry] with "true" velocity vector
     pub fn with_velocity_km_s(&self, velocity_km_s: Vector3D) -> Self {
-        let mut s = self.clone();
+        let mut s = *self;
         s.velocity_km_s = Some(velocity_km_s);
         s.orbit_prediction = false;
         s
@@ -242,7 +254,7 @@ impl SP3Entry {
 
     /// Copies and returns [SP3Entry] with predicted velocity vector
     pub fn with_predicted_velocity_km_s(&self, velocity_km_s: Vector3D) -> Self {
-        let mut s = self.clone();
+        let mut s = *self;
         s.velocity_km_s = Some(velocity_km_s);
         s.orbit_prediction = true;
         s
@@ -250,7 +262,7 @@ impl SP3Entry {
 
     /// Copies and returns [Self] with "true" clock offset in seconds
     pub fn with_clock_offset_s(&self, offset_s: f64) -> Self {
-        let mut s = self.clone();
+        let mut s = *self;
         s.clock_us = Some(offset_s * 1.0E6);
         s.clock_prediction = false;
         s
@@ -258,7 +270,7 @@ impl SP3Entry {
 
     /// Copies and returns [Self] with predicted clock offset in seconds
     pub fn with_predicted_clock_offset_s(&self, offset_s: f64) -> Self {
-        let mut s = self.clone();
+        let mut s = *self;
         s.clock_us = Some(offset_s * 1.0E6);
         s.clock_prediction = true;
         s
@@ -266,7 +278,7 @@ impl SP3Entry {
 
     /// Copies and returns [Self] with "true" clock offset in microseconds
     pub fn with_clock_offset_us(&self, offset_us: f64) -> Self {
-        let mut s = self.clone();
+        let mut s = *self;
         s.clock_us = Some(offset_us);
         s.clock_prediction = false;
         s
@@ -274,7 +286,7 @@ impl SP3Entry {
 
     /// Copies and returns [Self] with predicted clock offset in microseconds
     pub fn with_predicted_clock_offset_us(&self, offset_us: f64) -> Self {
-        let mut s = self.clone();
+        let mut s = *self;
         s.clock_us = Some(offset_us);
         s.clock_prediction = true;
         s
@@ -282,15 +294,275 @@ impl SP3Entry {
 
     /// Copies and returns [Self] with clock drift in seconds
     pub fn with_clock_drift_s(&self, drift_s: f64) -> Self {
-        let mut s = self.clone();
+        let mut s = *self;
         s.clock_drift_ns = Some(drift_s * 1.0E9);
         s
     }
 
     /// Copies and returns [Self] with clock drift in nanoseconds
     pub fn with_clock_drift_ns(&self, drift_ns: f64) -> Self {
-        let mut s = self.clone();
+        let mut s = *self;
         s.clock_drift_ns = Some(drift_ns);
         s
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::SP3Entry;
+    use crate::prelude::SV;
+    use crate::tests::formatting::Utf8Buffer;
+
+    use std::io::BufWriter;
+    use std::str::FromStr;
+
+    #[test]
+    fn basic_data_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        {
+            let (data, expected) = (
+                SP3Entry {
+                    position_km: (15402.861499, 21607.418873, -992.500669),
+                    velocity_km_s: None,
+                    orbit_prediction: false,
+                    maneuver: false,
+                    clock_drift_ns: None,
+                    clock_event: false,
+                    clock_prediction: false,
+                    clock_us: Some(10.571484),
+                },
+                "PG01  15402.861499  21607.418873   -992.500669     10.571484\n",
+            );
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn basic_noclock_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        {
+            let (data, expected) = (
+                SP3Entry {
+                    position_km: (15402.861499, 21607.418873, -992.500669),
+                    velocity_km_s: None,
+                    orbit_prediction: false,
+                    maneuver: false,
+                    clock_drift_ns: None,
+                    clock_event: false,
+                    clock_prediction: false,
+                    clock_us: None,
+                },
+                "PG01  15402.861499  21607.418873   -992.500669\n",
+            );
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn basic_maneuver_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        {
+            let (data, expected) = (
+                SP3Entry {
+                    position_km: (-12593.593500, 10170.327650, -20354.534400),
+                    velocity_km_s: None,
+                    orbit_prediction: false,
+                    maneuver: true,
+                    clock_drift_ns: None,
+                    clock_event: false,
+                    clock_prediction: false,
+                    clock_us: None,
+                },
+                "PG01 -12593.593500  10170.327650 -20354.534400                                M\n",
+            );
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn clock_prediction_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        {
+            let (data, expected) = (
+                SP3Entry {
+                    position_km: (-11044.805800, -10475.672350, 21929.418200),
+                    velocity_km_s: None,
+                    orbit_prediction: false,
+                    maneuver: false,
+                    clock_drift_ns: None,
+                    clock_event: false,
+                    clock_prediction: true,
+                    clock_us: None,
+                },
+                "PG01 -11044.805800 -10475.672350  21929.418200                             P\n",
+            );
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn orbit_prediction_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        {
+            let (data, expected) = (
+            SP3Entry {
+                position_km: (-11044.805800, -10475.672350, 21929.418200),
+                velocity_km_s: None,
+                orbit_prediction: true,
+                maneuver: false,
+                clock_drift_ns: None,
+                clock_event: false,
+                clock_prediction: false,
+                clock_us: None,
+            },
+            "PG01 -11044.805800 -10475.672350  21929.418200                                 P\n",
+        );
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn dual_clock_orbit_prediction_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        {
+            let (data, expected) = (
+            SP3Entry {
+                position_km: (-11044.805800, -10475.672350, 21929.418200),
+                velocity_km_s: None,
+                orbit_prediction: true,
+                maneuver: false,
+                clock_drift_ns: None,
+                clock_event: false,
+                clock_prediction: true,
+                clock_us: None,
+            },
+            "PG01 -11044.805800 -10475.672350  21929.418200                             P   P\n",
+        );
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn basic_velocity_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        {
+            let (data, expected) = (
+                SP3Entry {
+                    position_km: (15402.861499, 21607.418873, -992.500669),
+                    velocity_km_s: Some((-22859.768469, -8524.538983, -15063.229095)),
+                    orbit_prediction: false,
+                    maneuver: false,
+                    clock_drift_ns: None,
+                    clock_event: false,
+                    clock_prediction: false,
+                    clock_us: None,
+                },
+                "PG01  15402.861499  21607.418873   -992.500669
+VG01 -22859.768469  -8524.538983 -15063.229095\n",
+            );
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
+    }
+
+    #[test]
+    fn basic_velocity_drift_formatting() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        {
+            let (data, expected) = (
+                SP3Entry {
+                    position_km: (15402.861499, 21607.418873, -992.500669),
+                    velocity_km_s: Some((-22859.768469, -8524.538983, -15063.229095)),
+                    orbit_prediction: false,
+                    maneuver: false,
+                    clock_drift_ns: Some(-3.292980),
+                    clock_event: false,
+                    clock_prediction: false,
+                    clock_us: None,
+                },
+                "PG01  15402.861499  21607.418873   -992.500669
+VG01 -22859.768469  -8524.538983 -15063.229095     -3.292980\n",
+            );
+            let mut buf = BufWriter::new(Utf8Buffer::new(1024));
+
+            data.format(g01, &mut buf).unwrap_or_else(|e| {
+                panic!("SP3/data formatting issue: {}", e);
+            });
+
+            let formatted = buf.into_inner().unwrap();
+            let formatted = formatted.to_ascii_utf8();
+
+            assert_eq!(formatted, expected);
+        }
     }
 }
