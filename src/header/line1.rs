@@ -57,7 +57,7 @@ impl std::str::FromStr for Line1 {
         Ok(Self {
             epoch,
             num_epochs,
-            fit_type: line[40..45].trim().to_string(),
+            fit_type: line[40..45].to_string(),
             version: Version::from_str(&line[1..2])?,
             data_type: DataType::from_str(&line[2..3])?,
             coord_system: line[45..51].trim().to_string(),
@@ -68,16 +68,7 @@ impl std::str::FromStr for Line1 {
 }
 
 impl Line1 {
-    pub fn to_parts(&self) -> (Version, DataType, String, OrbitType, String) {
-        (
-            self.version,
-            self.data_type,
-            self.coord_system.clone(),
-            self.orbit_type,
-            self.agency.clone(),
-        )
-    }
-
+    /// Formats [Line1] according to SP3 standards.
     pub fn format<W: Write>(&self, w: &mut BufWriter<W>) -> Result<(), FormattingError> {
         let (y, m, d, hh, mm, ss, nanos) = self.epoch.to_gregorian_utc();
 
@@ -197,6 +188,16 @@ mod test {
                 "IGS14",
                 OrbitType::FIT,
             ),
+            (
+                "#dP2019 10 27  0  0  0.00000000       1   u+U IGS14 FIT  IGS",
+                Version::D,
+                DataType::Position,
+                "2019-10-27T00:00:00.00000000 UTC",
+                1,
+                "  u+U",
+                "IGS14",
+                OrbitType::FIT,
+            ),
         ] {
             let line1 = Line1::from_str(&line).unwrap();
             let epoch = Epoch::from_str(epoch_str).unwrap();
@@ -206,6 +207,8 @@ mod test {
             assert_eq!(line1.orbit_type, orbit_type);
             assert_eq!(line1.epoch, epoch);
             assert_eq!(line1.data_type, dtype);
+            assert_eq!(line1.fit_type, fit_type);
+            assert_eq!(line1.num_epochs, num_epochs);
 
             let mut buf = BufWriter::new(Utf8Buffer::new(1024));
 
@@ -215,6 +218,7 @@ mod test {
 
             let formatted = buf.into_inner().unwrap();
             let formatted = formatted.to_ascii_utf8();
+
             assert_eq!(formatted, line);
         }
     }

@@ -1,3 +1,4 @@
+use core::num;
 use std::{
     collections::BTreeMap,
     fs::File,
@@ -101,12 +102,14 @@ impl SP3 {
 
             if is_header_line1(line) && !is_header_line2(line) {
                 let l1 = Line1::from_str(line)?;
-                let (version, data_type, coord_system, orbit_type, agency) = l1.to_parts();
-                header.version = version;
-                header.data_type = data_type;
-                header.coord_system = coord_system;
-                header.orbit_type = orbit_type;
-                header.agency = agency;
+
+                header.version = l1.version;
+                header.data_type = l1.data_type;
+                header.coord_system = l1.coord_system;
+                header.orbit_type = l1.orbit_type;
+                header.agency = l1.agency.to_string();
+                header.num_epochs = l1.num_epochs;
+                header.fit_type = l1.fit_type.to_string();
             }
 
             if is_header_line2(line) {
