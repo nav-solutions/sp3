@@ -92,7 +92,7 @@ let parsed_back = SP3::from_file("/tmp/test.txt")
     .unwrap();
 
 // Reciprocity
-assrt_eq!(sp3, parsed_back);
+assert_eq!(sp3, parsed_back);
 ```
 
 ## Lib features
