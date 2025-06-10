@@ -12,9 +12,6 @@ use crate::{
     prelude::{Constellation, Duration, Epoch, ParsingError, TimeScale, SV},
 };
 
-#[cfg(doc)]
-use crate::prelude::Epoch;
-
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -252,7 +249,9 @@ mod test {
         assert_eq!(
             formatted,
             "#cP2019 12 31 23 59 42.00000000      10 __u+U ITRF93 FIT  GRGS
-## 1234      0.00000567   900.00000000 00012 33999999.0000000999999\n"
+## 1234      0.00000567   900.00000000 00012 33999999.0000000999999
+%c G  cc GPS ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc
+%c cc cc ccc ccc cccc cccc cccc cccc ccccc ccccc ccccc ccccc\n"
         );
     }
 }

@@ -81,7 +81,7 @@ pub mod prelude {
 }
 
 /// SP3 dataset is a list of [SP3Entry] indexed by [SP3Key].
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Hash, Eq, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SP3Key {
     /// Spacecraft described as [SV]

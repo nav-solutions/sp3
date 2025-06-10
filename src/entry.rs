@@ -210,6 +210,8 @@ impl SP3Entry {
             }
         };
 
+        //10  9 11 102 EP  MP
+
         writeln!(w, "{}", formatted)?;
         Ok(())
     }
