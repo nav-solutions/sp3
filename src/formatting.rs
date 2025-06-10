@@ -2,6 +2,7 @@ use std::{
     fs::File,
     io::{BufWriter, Write},
     path::Path,
+    str::FromStr,
 };
 
 use itertools::Itertools;
@@ -10,6 +11,8 @@ use crate::{errors::FormattingError, prelude::SP3};
 
 #[cfg(feature = "flate2")]
 use flate2::{write::GzEncoder, Compression as GzCompression};
+
+use hifitime::efmt::{Format, Formatter};
 
 pub(crate) struct CoordsFormatter {
     value: f64,
@@ -56,6 +59,8 @@ impl SP3 {
     /// Formats [SP3] into writable I/O using efficient buffered writer
     /// and following standard specifications.
     pub fn format<W: Write>(&self, writer: &mut BufWriter<W>) -> Result<(), FormattingError> {
+        let efmt = Format::from_str("%Y %m %d %H %M %S.%f").unwrap();
+
         self.header.format(writer)?;
 
         for comment in self.comments.iter() {
@@ -63,19 +68,23 @@ impl SP3 {
         }
 
         for epoch in self.data.keys().map(|k| k.epoch).sorted() {
-            let (y, m, d, hh, mm, ss, nanos) = epoch.to_gregorian_utc();
+            let formatter = Formatter::new(epoch, efmt);
 
-            writeln!(
-                writer,
-                "*  {:04} {:2} {:2} {:2} {:2} {:2}.{:08}",
-                y,
-                m,
-                d,
-                hh,
-                mm,
-                ss,
-                nanos / 10
-            )?;
+            // let (y, m, d, hh, mm, ss, nanos) = epoch.to_gregorian_utc();
+
+            // writeln!(
+            //     writer,
+            //     "*  {:04} {:2} {:2} {:2} {:2} {:2}.{:08}",
+            //     y,
+            //     m,
+            //     d,
+            //     hh,
+            //     mm,
+            //     ss,
+            //     nanos / 10
+            // )?;
+
+            writeln!(writer, "*  {}", formatter,)?;
 
             for key in self
                 .data
