@@ -22,13 +22,19 @@ mod test {
             let file_path = prefix.clone().join(file);
             println!("Parsing file \"{}\"", file_path.to_string_lossy());
 
-            let sp3 = SP3::from_gzip_file(&file_path);
-            assert!(
-                sp3.is_ok(),
-                "failed to parse data/{}, error: {:?}",
-                file,
-                sp3.err()
-            );
+            let sp3 = SP3::from_gzip_file(&file_path).unwrap_or_else(|e| {
+                panic!("failed to parse data/C/{}: {}", file, e);
+            });
+
+            // dump
+            sp3.to_file("test.txt").unwrap_or_else(|e| {
+                panic!("Failed to dump data/C/{}: {}", file, e);
+            });
+
+            // parse back
+            let parsed_back = SP3::from_file("test.txt").unwrap_or_else(|e| {
+                panic!("Failed to parse dumped data/C/{}: {}", file, e);
+            });
         }
     }
 
@@ -42,13 +48,20 @@ mod test {
         for file in ["co108870.sp3", "em108871.sp3"] {
             let file_path = prefix.clone().join(file);
             println!("Parsing file \"{}\"", file_path.to_string_lossy());
-            let sp3 = SP3::from_file(&file_path);
-            assert!(
-                sp3.is_ok(),
-                "failed to parse data/{}, error: {:?}",
-                file,
-                sp3.err()
-            );
+
+            let sp3 = SP3::from_file(&file_path).unwrap_or_else(|e| {
+                panic!("failed to parse data/C/{}: {}", file, e);
+            });
+
+            // dump
+            sp3.to_file("test.txt").unwrap_or_else(|e| {
+                panic!("Failed to dump data/C/{}: {}", file, e);
+            });
+
+            // parse back
+            let parsed_back = SP3::from_file("test.txt").unwrap_or_else(|e| {
+                panic!("Failed to parse dumped data/C/{}: {}", file, e);
+            });
         }
     }
 
@@ -60,20 +73,26 @@ mod test {
             .join("data/SP3")
             .join("D");
 
-        for file in [
-            "COD0MGXFIN_20230500000_01D_05M_ORB.SP3.gz",
-            "Sta21114.sp3.gz",
+        for (file, expected_name) in [
+            (
+                "COD0MGXFIN_20230500000_01D_05M_ORB.SP3.gz",
+                "AIU0MGXFIN_202305000000_01D_05M_ORB.SP3.gz",
+            ),
+            ("Sta21114.sp3.gz", "IAC0OPSRAP_20201770000_01D_15M_ORB.SP3"),
         ] {
             let file_path = prefix.clone().join(file);
             println!("Parsing file \"{}\"", file_path.to_string_lossy());
 
-            let sp3 = SP3::from_gzip_file(&file_path);
-            assert!(
-                sp3.is_ok(),
-                "failed to parse data/{}, error: {:?}",
-                file,
-                sp3.err()
-            );
+            let sp3 = SP3::from_gzip_file(&file_path).unwrap_or_else(|e| {
+                panic!("failed to parse data/D/{}: {}", file, e);
+            });
+
+            // dump
+            sp3.to_file("test.txt").unwrap_or_else(|e| {
+                panic!("Failed to dump data/D/{}: {}", file, e);
+            });
+
+            assert_eq!(sp3.standardized_filename(), expected_name);
         }
     }
 
@@ -88,12 +107,14 @@ mod test {
             let file = "example.txt";
             let file_path = prefix.clone().join(file);
             println!("Parsing file \"{}\"", file_path.to_string_lossy());
-            let sp3 = SP3::from_file(&file_path);
-            assert!(
-                sp3.is_ok(),
-                "failed to parse data/{}, error: {:?}",
-                file,
-                sp3.err()
+
+            let sp3 = SP3::from_file(&file_path).unwrap_or_else(|e| {
+                panic!("failed to parse data/D/{}: {}", file, e);
+            });
+
+            assert_eq!(
+                sp3.standardized_filename(),
+                "IGS0OPSRAP_20193000000_01D_05M_ORB.SP3"
             );
         }
     }

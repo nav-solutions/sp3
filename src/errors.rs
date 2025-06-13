@@ -57,8 +57,8 @@ pub enum ParsingError {
     #[error("failed to parse sampling period")]
     SamplingPeriod,
 
-    #[error("failed to parse mjd start \"{0}\"")]
-    Mjd(String),
+    #[error("failed to parse MJD")]
+    Mjd,
 
     #[error("failed to parse sv from \"{0}\"")]
     SV(String),
@@ -74,6 +74,9 @@ pub enum ParsingError {
 
     #[error("Invalid file availability")]
     InvalidFileAvailability,
+
+    #[error("not a valid IGS campaign name")]
+    InvalidCampaignName,
 }
 
 /// Errors that may rise in Formatting process

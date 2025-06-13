@@ -21,8 +21,12 @@ use line2::Line2;
 #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum DataType {
+    /// [DataType::Position]: provides absolute positions (only).
     #[default]
     Position,
+
+    /// [DataType::Velocity]: absolute position & velocities
+    /// are both provided.
     Velocity,
 }
 
@@ -126,14 +130,17 @@ pub struct Header {
     /// [TimeScale] that applies to all following [Epoch]s.
     pub timescale: TimeScale,
 
-    /// [TimeScale] week counter.
+    /// Total elapsed weeks in [TimeScale].
     pub week: u32,
 
-    /// Total number of nanoseconds in current [TimeScale] week.
+    /// Total number of nanoseconds in current week.
     pub week_nanos: u64,
 
-    /// Datetime of first record entry, expressed as integral and frational MJD in [TimeScale].
-    pub mjd: f64,
+    /// Datetime as MJD (in [TimeScale])
+    pub mjd: u32,
+
+    /// MJD fraction of day (>=0, <1.0)
+    pub mjd_fraction: f64,
 
     /// Sampling period, as [Duration].
     pub sampling_period: Duration,
@@ -161,12 +168,10 @@ impl Header {
             self.week_nanos - self.week_nanos / 1_000_000_000,
         );
 
-        let mjd = (self.mjd.floor() as u32, (self.mjd.fract() * 10.0E7));
-
         let line2 = Line2 {
             week: self.week,
             sow_nanos,
-            mjd,
+            mjd_fract: (self.mjd, self.mjd_fraction),
             sampling_period: self.sampling_period,
         };
 
@@ -231,7 +236,8 @@ mod test {
             timescale: TimeScale::GPST,
             week: 1234,
             week_nanos: 5678,
-            mjd: 12.34,
+            mjd: 12,
+            mjd_fraction: 0.123,
             sampling_period: Duration::from_seconds(900.0),
             satellites: "G01,G02,G03,G04,G05"
                 .split(',')

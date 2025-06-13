@@ -19,7 +19,7 @@ pub struct SP3Entry {
     pub velocity_km_s: Option<Vector3D>,
 
     /// True if the state vector is predicted
-    pub orbit_prediction: bool,
+    pub predicted_orbit: bool,
 
     /// True if vehicle being maneuvered (rocket truster)
     /// since last state.
@@ -30,7 +30,7 @@ pub struct SP3Entry {
     pub clock_event: bool,
 
     /// True when the clock state is actually predicted
-    pub clock_prediction: bool,
+    pub predicted_clock: bool,
 
     /// Clock offset correction, in microsecond with 10⁻¹² precision.
     pub clock_us: Option<f64>,
@@ -62,8 +62,8 @@ impl std::ops::Sub for SP3Entry {
             },
             maneuver: self.maneuver,
             clock_event: self.clock_event,
-            clock_prediction: self.clock_prediction,
-            orbit_prediction: self.orbit_prediction,
+            predicted_clock: self.predicted_clock,
+            predicted_orbit: self.predicted_orbit,
             clock_us: if let Some(clock_us) = self.clock_us {
                 rhs.clock_us.map(|rhs| clock_us - rhs)
             } else {
@@ -116,8 +116,8 @@ impl SP3Entry {
             maneuver: false,
             velocity_km_s: None,
             clock_drift_ns: None,
-            clock_prediction: false,
-            orbit_prediction: false,
+            predicted_clock: false,
+            predicted_orbit: false,
             clock_event: false,
         }
     }
@@ -130,8 +130,8 @@ impl SP3Entry {
             maneuver: false,
             velocity_km_s: None,
             clock_drift_ns: None,
-            clock_prediction: false,
-            orbit_prediction: true,
+            predicted_clock: false,
+            predicted_orbit: true,
             clock_event: false,
         }
     }
@@ -145,8 +145,8 @@ impl SP3Entry {
             clock_us: None,
             maneuver: false,
             clock_drift_ns: None,
-            clock_prediction: false,
-            orbit_prediction: false,
+            predicted_clock: false,
+            predicted_orbit: false,
             clock_event: false,
         }
     }
@@ -163,8 +163,8 @@ impl SP3Entry {
             maneuver: false,
             clock_drift_ns: None,
             velocity_km_s: Some(velocity_km_s),
-            clock_prediction: false,
-            orbit_prediction: true,
+            predicted_clock: false,
+            predicted_orbit: true,
             clock_event: false,
         }
     }
@@ -191,7 +191,7 @@ impl SP3Entry {
             formatted.push(' ');
         }
 
-        if self.clock_prediction {
+        if self.predicted_clock {
             formatted.push_str("P  ");
         } else {
             formatted.push_str("   ");
@@ -204,7 +204,7 @@ impl SP3Entry {
             formatted.push(' ');
         }
 
-        if self.orbit_prediction {
+        if self.predicted_orbit {
             formatted.push('P');
         }
 
@@ -232,7 +232,7 @@ impl SP3Entry {
     pub fn with_position_km(&self, position_km: Vector3D) -> Self {
         let mut s = *self;
         s.position_km = position_km;
-        s.orbit_prediction = false;
+        s.predicted_orbit = false;
         s
     }
 
@@ -240,7 +240,7 @@ impl SP3Entry {
     pub fn with_predicted_position_km(&self, position_km: Vector3D) -> Self {
         let mut s = *self;
         s.position_km = position_km;
-        s.orbit_prediction = true;
+        s.predicted_orbit = true;
         s
     }
 
@@ -248,7 +248,7 @@ impl SP3Entry {
     pub fn with_velocity_km_s(&self, velocity_km_s: Vector3D) -> Self {
         let mut s = *self;
         s.velocity_km_s = Some(velocity_km_s);
-        s.orbit_prediction = false;
+        s.predicted_orbit = false;
         s
     }
 
@@ -256,7 +256,7 @@ impl SP3Entry {
     pub fn with_predicted_velocity_km_s(&self, velocity_km_s: Vector3D) -> Self {
         let mut s = *self;
         s.velocity_km_s = Some(velocity_km_s);
-        s.orbit_prediction = true;
+        s.predicted_orbit = true;
         s
     }
 
@@ -264,7 +264,7 @@ impl SP3Entry {
     pub fn with_clock_offset_s(&self, offset_s: f64) -> Self {
         let mut s = *self;
         s.clock_us = Some(offset_s * 1.0E6);
-        s.clock_prediction = false;
+        s.predicted_clock = false;
         s
     }
 
@@ -272,7 +272,7 @@ impl SP3Entry {
     pub fn with_predicted_clock_offset_s(&self, offset_s: f64) -> Self {
         let mut s = *self;
         s.clock_us = Some(offset_s * 1.0E6);
-        s.clock_prediction = true;
+        s.predicted_clock = true;
         s
     }
 
@@ -280,7 +280,7 @@ impl SP3Entry {
     pub fn with_clock_offset_us(&self, offset_us: f64) -> Self {
         let mut s = *self;
         s.clock_us = Some(offset_us);
-        s.clock_prediction = false;
+        s.predicted_clock = false;
         s
     }
 
@@ -288,7 +288,7 @@ impl SP3Entry {
     pub fn with_predicted_clock_offset_us(&self, offset_us: f64) -> Self {
         let mut s = *self;
         s.clock_us = Some(offset_us);
-        s.clock_prediction = true;
+        s.predicted_clock = true;
         s
     }
 
@@ -325,11 +325,11 @@ mod test {
                 SP3Entry {
                     position_km: (15402.861499, 21607.418873, -992.500669),
                     velocity_km_s: None,
-                    orbit_prediction: false,
+                    predicted_orbit: false,
                     maneuver: false,
                     clock_drift_ns: None,
                     clock_event: false,
-                    clock_prediction: false,
+                    predicted_clock: false,
                     clock_us: Some(10.571484),
                 },
                 "PG01  15402.861499  21607.418873   -992.500669     10.571484\n",
@@ -356,11 +356,11 @@ mod test {
                 SP3Entry {
                     position_km: (15402.861499, 21607.418873, -992.500669),
                     velocity_km_s: None,
-                    orbit_prediction: false,
+                    predicted_orbit: false,
                     maneuver: false,
                     clock_drift_ns: None,
                     clock_event: false,
-                    clock_prediction: false,
+                    predicted_clock: false,
                     clock_us: None,
                 },
                 "PG01  15402.861499  21607.418873   -992.500669\n",
@@ -387,11 +387,11 @@ mod test {
                 SP3Entry {
                     position_km: (-12593.593500, 10170.327650, -20354.534400),
                     velocity_km_s: None,
-                    orbit_prediction: false,
+                    predicted_orbit: false,
                     maneuver: true,
                     clock_drift_ns: None,
                     clock_event: false,
-                    clock_prediction: false,
+                    predicted_clock: false,
                     clock_us: None,
                 },
                 "PG01 -12593.593500  10170.327650 -20354.534400                                M\n",
@@ -418,11 +418,11 @@ mod test {
                 SP3Entry {
                     position_km: (-11044.805800, -10475.672350, 21929.418200),
                     velocity_km_s: None,
-                    orbit_prediction: false,
+                    predicted_orbit: false,
                     maneuver: false,
                     clock_drift_ns: None,
                     clock_event: false,
-                    clock_prediction: true,
+                    predicted_clock: true,
                     clock_us: None,
                 },
                 "PG01 -11044.805800 -10475.672350  21929.418200                             P\n",
@@ -449,11 +449,11 @@ mod test {
             SP3Entry {
                 position_km: (-11044.805800, -10475.672350, 21929.418200),
                 velocity_km_s: None,
-                orbit_prediction: true,
+                predicted_orbit: true,
                 maneuver: false,
                 clock_drift_ns: None,
                 clock_event: false,
-                clock_prediction: false,
+                predicted_clock: false,
                 clock_us: None,
             },
             "PG01 -11044.805800 -10475.672350  21929.418200                                 P\n",
@@ -480,11 +480,11 @@ mod test {
             SP3Entry {
                 position_km: (-11044.805800, -10475.672350, 21929.418200),
                 velocity_km_s: None,
-                orbit_prediction: true,
+                predicted_orbit: true,
                 maneuver: false,
                 clock_drift_ns: None,
                 clock_event: false,
-                clock_prediction: true,
+                predicted_clock: true,
                 clock_us: None,
             },
             "PG01 -11044.805800 -10475.672350  21929.418200                             P   P\n",
@@ -511,11 +511,11 @@ mod test {
                 SP3Entry {
                     position_km: (15402.861499, 21607.418873, -992.500669),
                     velocity_km_s: Some((-22859.768469, -8524.538983, -15063.229095)),
-                    orbit_prediction: false,
+                    predicted_orbit: false,
                     maneuver: false,
                     clock_drift_ns: None,
                     clock_event: false,
-                    clock_prediction: false,
+                    predicted_clock: false,
                     clock_us: None,
                 },
                 "PG01  15402.861499  21607.418873   -992.500669
@@ -543,11 +543,11 @@ VG01 -22859.768469  -8524.538983 -15063.229095\n",
                 SP3Entry {
                     position_km: (15402.861499, 21607.418873, -992.500669),
                     velocity_km_s: Some((-22859.768469, -8524.538983, -15063.229095)),
-                    orbit_prediction: false,
+                    predicted_orbit: false,
                     maneuver: false,
                     clock_drift_ns: Some(-3.292980),
                     clock_event: false,
-                    clock_prediction: false,
+                    predicted_clock: false,
                     clock_us: None,
                 },
                 "PG01  15402.861499  21607.418873   -992.500669

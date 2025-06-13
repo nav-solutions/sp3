@@ -1,13 +1,15 @@
-use qc_traits::{FilterItem, MaskFilter, MaskOperand, Masking};
-
 use crate::prelude::{Constellation, Epoch, Header, SP3};
+use hifitime::Unit;
+use qc_traits::{FilterItem, MaskFilter, MaskOperand, Masking};
 
 impl Masking for Header {
     fn mask_mut(&mut self, mask: &MaskFilter) {
         match mask.operand {
             MaskOperand::Equals => match &mask.item {
                 FilterItem::EpochItem(epoch) => {
-                    let mut mjd = Epoch::from_mjd_utc(self.mjd);
+                    let mut mjd = Epoch::from_mjd_utc(self.mjd as f64);
+                    mjd += self.mjd_fraction * Unit::Day;
+
                     if self.timescale.is_gnss() {
                         mjd = Epoch::from_duration(
                             mjd - self.timescale.reference_epoch(),

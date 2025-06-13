@@ -43,13 +43,17 @@ mod test {
         assert_eq!(sp3.header.timescale, TimeScale::GPST);
         assert_eq!(sp3.header.constellation, Constellation::Mixed);
         assert_eq!(sp3.header.agency, "IGS");
+
         assert_eq!(sp3.header.week, 2077);
         assert_eq!(sp3.header.week_nanos, 0);
+
         assert_eq!(
             sp3.header.sampling_period,
             Duration::from_seconds(300.0_f64)
         );
-        assert_eq!(sp3.header.mjd, 58783.0);
+
+        assert_eq!(sp3.header.mjd, 58783);
+        assert_eq!(sp3.header.mjd_fraction, 0.0);
 
         let c01 = SV::from_str("C01").unwrap();
         let e01 = SV::from_str("E01").unwrap();

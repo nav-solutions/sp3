@@ -8,12 +8,17 @@ use serde::{Deserialize, Serialize};
 #[derive(Default, Copy, Clone, Debug, PartialEq, PartialOrd, Eq, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Version {
+    /// SP3-a revision. See <https://igs.org/formats-and-standards/>
     A,
+
+    /// SP3-b revision. See <https://igs.org/formats-and-standards/>
     B,
-    /// SP3-C revision. See <https://igs.org/formats-and-standards/>
+
+    /// SP3-c revision. See <https://igs.org/formats-and-standards/>
     C,
+
     #[default]
-    /// SP3-D revision (latest). See <https://igs.org/formats-and-standards/>
+    /// SP3-d revision (latest). See <https://igs.org/formats-and-standards/>
     D,
 }
 
@@ -59,8 +64,10 @@ impl From<Version> for u8 {
 impl From<u8> for Version {
     fn from(lhs: u8) -> Version {
         match lhs {
-            4..=u8::MAX => Version::D,
-            0..=3 => Version::C,
+            1 => Version::A,
+            2 => Version::B,
+            3 => Version::C,
+            _ => Version::D,
         }
     }
 }
@@ -77,7 +84,15 @@ impl std::ops::Sub<u8> for Version {
     type Output = Self;
     fn sub(self, rhs: u8) -> Self {
         let s: u8 = self.into();
-        (s - rhs).into()
+
+        let mut s = s as i8;
+        s -= rhs as i8;
+
+        if s <= 0 {
+            Self::A
+        } else {
+            (s as u8).into()
+        }
     }
 }
 
@@ -85,6 +100,7 @@ impl std::ops::Sub<u8> for Version {
 mod test {
     use super::Version;
     use std::str::FromStr;
+
     #[test]
     fn version() {
         for (desc, expected) in [("c", Version::C), ("d", Version::D)] {
@@ -101,15 +117,24 @@ mod test {
         assert!(Version::C < Version::D);
         assert!(Version::D >= Version::C);
 
+        assert_eq!(Version::C - 2, Version::A);
+        assert_eq!(Version::C - 1, Version::B);
+        assert_eq!(Version::C + 1, Version::D);
+
+        assert_eq!(Version::D - 3, Version::A);
+        assert_eq!(Version::D - 2, Version::B);
+        assert_eq!(Version::D - 1, Version::C);
+        assert_eq!(Version::D + 1, Version::D);
+
+        assert_eq!(Version::A - 1, Version::A);
+        assert_eq!(Version::A + 1, Version::B);
+        assert_eq!(Version::A + 2, Version::C);
+
         let version: Version = 4_u8.into();
         assert_eq!(version, Version::D);
-        assert_eq!(version + 1, Version::D);
-        assert_eq!(version - 1, Version::C);
 
         let version: Version = 3_u8.into();
         assert_eq!(version, Version::C);
-        assert_eq!(version + 1, Version::D);
-        assert_eq!(version - 1, Version::C);
 
         assert!(Version::A < Version::B);
         assert!(Version::A < Version::C);

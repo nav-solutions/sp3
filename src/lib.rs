@@ -22,6 +22,7 @@ extern crate gnss_qc_traits as qc_traits;
 use gnss::prelude::{Constellation, SV};
 use hifitime::Epoch;
 use prelude::ProductionAttributes;
+use production::Campaign;
 
 use std::collections::BTreeMap;
 
@@ -32,6 +33,10 @@ mod qc;
 #[cfg(feature = "processing")]
 #[cfg_attr(docsrs, doc(cfg(feature = "processing")))]
 mod processing;
+
+#[cfg(feature = "nyx")]
+#[cfg_attr(docsrs, doc(cfg(feature = "nyx")))]
+mod nyx;
 
 #[cfg(feature = "anise")]
 use anise::{
@@ -111,7 +116,7 @@ pub struct SP3 {
     pub data: BTreeMap<SP3Key, SP3Entry>,
 }
 
-use crate::prelude::DataType;
+use crate::prelude::{Availability, DataType, ReleasePeriod};
 
 // Lagrangian interpolator
 pub(crate) fn lagrange_interpolation(
@@ -169,7 +174,7 @@ pub(crate) fn lagrange_interpolation(
 impl SP3 {
     /// Returns [Epoch] of first entry
     pub fn first_epoch(&self) -> Epoch {
-        let mut t0_utc = Epoch::from_mjd_utc(self.header.mjd);
+        let mut t0_utc = Epoch::from_mjd_utc(self.header.mjd as f64);
 
         if self.header.timescale.is_gnss() {
             t0_utc = Epoch::from_duration(
@@ -178,7 +183,7 @@ impl SP3 {
             );
         }
 
-        t0_utc
+        t0_utc + self.header.mjd_fraction * Unit::Day
     }
 
     /// Returns last [Epoch] to be found in this record.
@@ -197,7 +202,7 @@ impl SP3 {
         self.data
             .iter()
             .filter_map(|(k, v)| {
-                if v.orbit_prediction {
+                if v.predicted_orbit {
                     Some((k, v))
                 } else {
                     None
@@ -253,6 +258,50 @@ impl SP3 {
         true
     }
 
+    /// Propose a file name that would follow the IGS file naming conventions.
+    /// This is particularly useful in the context of sP3 data synthesis
+    /// and production. It may also be used to generate a file name
+    /// that would follow the conventions, while parsed from a file that did not.
+    pub fn standardized_filename(&self) -> String {
+        let mut batch_id = 0;
+        let mut campaign = Campaign::default();
+        let mut avail = Availability::default();
+        let mut release_period = ReleasePeriod::default();
+
+        let mut extension = "";
+
+        if let Some(attributes) = &self.prod_attributes {
+            batch_id = attributes.batch_id;
+            avail = attributes.availability;
+            campaign = attributes.campaign;
+            release_period = attributes.release_period;
+            extension = ".gz";
+        }
+
+        let (year, doy) = (
+            self.header.release_epoch.year(),
+            self.header.release_epoch.day_of_year() as u16,
+        );
+
+        let doy_padding = if doy < 100 { "00000" } else { "0000" };
+
+        let sampling_period_mins = (self.header.sampling_period.to_seconds() / 60.0).round() as u16;
+
+        format!(
+            "{}{}{}{}_{}{:03}{}_{}_{:02}M_ORB.SP3{}",
+            &self.header.agency[..3],
+            batch_id,
+            campaign,
+            avail,
+            year,
+            doy as u16,
+            doy_padding,
+            release_period,
+            sampling_period_mins,
+            extension,
+        )
+    }
+
     /// Returns total number of [Epoch] to be found
     pub fn total_epochs(&self) -> usize {
         self.epochs_iter().count()
@@ -268,7 +317,7 @@ impl SP3 {
         self.satellites_iter().map(|sv| sv.constellation).unique()
     }
 
-    /// File comments [Iterator].
+    /// File comments [Iterator]
     pub fn comments_iter(&self) -> impl Iterator<Item = &String> + '_ {
         self.comments.iter()
     }
