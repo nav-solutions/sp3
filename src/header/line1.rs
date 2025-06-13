@@ -16,7 +16,7 @@ pub(crate) struct Line1 {
     pub version: Version,
     pub data_type: DataType,
     pub epoch: Epoch,
-    pub fit_type: String,
+    pub observables: String,
     pub num_epochs: u64,
     pub coord_system: String,
     pub orbit_type: OrbitType,
@@ -57,7 +57,7 @@ impl std::str::FromStr for Line1 {
         Ok(Self {
             epoch,
             num_epochs,
-            fit_type: line[40..45].to_string(),
+            observables: line[40..45].to_string(),
             version: Version::from_str(&line[1..2])?,
             data_type: DataType::from_str(&line[2..3])?,
             coord_system: line[45..51].trim().to_string(),
@@ -85,7 +85,7 @@ impl Line1 {
             ss,
             nanos / 10,
             self.num_epochs,
-            self.fit_type,
+            self.observables,
             self.coord_system,
             self.orbit_type,
             self.agency,
@@ -107,7 +107,7 @@ mod test {
 
     #[test]
     fn test_line1() {
-        for (line, version, dtype, epoch_str, num_epochs, fit_type, coord_system, orbit_type) in [
+        for (line, version, dtype, epoch_str, num_epochs, observables, coord_system, orbit_type) in [
             (
                 "#dP2020  6 24  1  3  4.12345678      97 __u+U IGS14 FIT  IAC",
                 Version::D,
@@ -207,7 +207,7 @@ mod test {
             assert_eq!(line1.orbit_type, orbit_type);
             assert_eq!(line1.epoch, epoch);
             assert_eq!(line1.data_type, dtype);
-            assert_eq!(line1.fit_type, fit_type);
+            assert_eq!(line1.observables, observables);
             assert_eq!(line1.num_epochs, num_epochs);
 
             let mut buf = BufWriter::new(Utf8Buffer::new(1024));

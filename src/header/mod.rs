@@ -114,8 +114,22 @@ pub struct Header {
     /// [OrbitType] used in the fitting process prior publication.
     pub orbit_type: OrbitType,
 
-    /// Fit-type
-    pub fit_type: String,
+    /// "Observables" used for this fit, we parse "as is".
+    /// Explanations on typical values:
+    /// - `u`  undifferenced carrier phase
+    /// - `du` change in u with time
+    /// - `s`  2-receiver/1-satellite carrier phase
+    /// - `ds` change on s with time
+    /// - `d` 2-receiver/2-satellite carrier phase
+    /// - `dd` change in d with time
+    /// - `U` undifferenced code phase
+    /// - `dU` change in U with time
+    /// - `S` 2-receiver/1-satellite code phase
+    /// - `dS` change in S with time
+    /// - `D` 2-receiver/2-satellite code phase
+    /// - `dD` change in D with time
+    /// - `+` used as separator
+    pub observables: String,
 
     /// Total number of epochs
     pub num_epochs: u64,
@@ -159,7 +173,7 @@ impl Header {
             num_epochs: self.num_epochs,
             orbit_type: self.orbit_type,
             agency: self.agency.to_string(),
-            fit_type: self.fit_type.to_string(),
+            observables: self.observables.to_string(),
             coord_system: self.coord_system.to_string(),
         };
 
@@ -225,7 +239,7 @@ mod test {
     fn header_formatting() {
         let header = Header {
             version: Version::C,
-            fit_type: "__u+U".to_string(),
+            observables: "__u+U".to_string(),
             release_epoch: Epoch::from_str("2020-01-01T00:00:00 GPST").unwrap(),
             data_type: DataType::Position,
             coord_system: "ITRF93".to_string(),
