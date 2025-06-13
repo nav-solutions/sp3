@@ -126,7 +126,7 @@ impl SP3 {
                 header.orbit_type = l1.orbit_type;
                 header.agency = l1.agency.to_string();
                 header.num_epochs = l1.num_epochs;
-                header.fit_type = l1.fit_type.to_string();
+                header.observables = l1.observables.to_string();
                 header.release_epoch = l1.epoch;
             }
 
