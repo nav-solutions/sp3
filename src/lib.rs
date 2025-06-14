@@ -319,7 +319,7 @@ impl SP3 {
     /// [SV] position coordinates [Iterator], in kilometers ECEF, with theoretical 10⁻³m precision.  
     /// All coordinates expressed in fixed body frame. The coordinates system is given by [Header] section.   
     /// The provided [Iterator] contains all coordinates, whether they were fitted or predicted.  
-    /// 
+    ///
     /// ## Output
     /// - [Epoch] : sampling epoch
     /// - [SV] : satellite identity
@@ -338,7 +338,7 @@ impl SP3 {
     /// All coordinates expressed in fixed body frame. The coordinates system is given by [Header] section.   
     /// The provided [Iterator] contains all coordinates, whether they were fitted or predicted, but
     /// not satellites being maneuvered: this will output a gap during the maneuver duration.
-    /// 
+    ///
     /// ## Output
     /// - [Epoch] : sampling epoch
     /// - [SV] : satellite identity
@@ -347,23 +347,22 @@ impl SP3 {
     pub fn satellites_stable_position_km_iter(
         &self,
     ) -> Box<dyn Iterator<Item = (Epoch, SV, bool, Vector3D)> + '_> {
-        Box::new(
-            self.satellites_position_km_iter()
-                .filter_map(|(t, sv, predicted, maneuvered, coords)| {
-                    if !maneuvered {
-                        Some((t, sv, predicted, coords))
-                    } else {
-                        None
-                    }
-                })
-        )
+        Box::new(self.satellites_position_km_iter().filter_map(
+            |(t, sv, predicted, maneuvered, coords)| {
+                if !maneuvered {
+                    Some((t, sv, predicted, coords))
+                } else {
+                    None
+                }
+            },
+        ))
     }
 
     /// [SV] position coordinates [Iterator], in kilometers ECEF, with theoretical 10⁻³m precision.  
     /// All coordinates expressed in fixed body frame. The coordinates system is given by [Header] section.   
     /// The provided [Iterator] contains only fitted coordinates (not predicted), and not satellites being maneuvered.
     /// This will output a data gap during the maneuver duration.
-    /// 
+    ///
     /// ## Output
     /// - [Epoch] : sampling epoch
     /// - [SV] : satellite identity
@@ -371,23 +370,22 @@ impl SP3 {
     pub fn satellites_stable_fitted_position_km_iter(
         &self,
     ) -> Box<dyn Iterator<Item = (Epoch, SV, Vector3D)> + '_> {
-        Box::new(
-            self.satellites_stable_position_km_iter()
-                .filter_map(|(t, sv, predicted, coords)| {
-                    if !predicted {
-                        Some((t, sv, coords))
-                    } else {
-                        None
-                    }
-                })
-        )
+        Box::new(self.satellites_stable_position_km_iter().filter_map(
+            |(t, sv, predicted, coords)| {
+                if !predicted {
+                    Some((t, sv, coords))
+                } else {
+                    None
+                }
+            },
+        ))
     }
 
     /// [SV] position coordinates [Iterator], in kilometers ECEF, with theoretical 10⁻³m precision.  
     /// All coordinates expressed in fixed body frame. The coordinates system is given by [Header] section.   
     /// The provided [Iterator] contains only predicted coordinates (not fitted), and not satellites being maneuvered.
     /// This will output a data gap during the maneuver duration.
-    /// 
+    ///
     /// ## Output
     /// - [Epoch] : sampling epoch
     /// - [SV] : satellite identity
@@ -395,16 +393,15 @@ impl SP3 {
     pub fn satellites_stable_predicted_position_km_iter(
         &self,
     ) -> Box<dyn Iterator<Item = (Epoch, SV, Vector3D)> + '_> {
-        Box::new(
-            self.satellites_stable_position_km_iter()
-                .filter_map(|(t, sv, predicted, coords)| {
-                    if predicted {
-                        Some((t, sv, coords))
-                    } else {
-                        None
-                    }
-                })
-        )
+        Box::new(self.satellites_stable_position_km_iter().filter_map(
+            |(t, sv, predicted, coords)| {
+                if predicted {
+                    Some((t, sv, coords))
+                } else {
+                    None
+                }
+            },
+        ))
     }
 
     /// [SV] [Orbit]al state [Iterator] with theoretical 10⁻³m precision.

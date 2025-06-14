@@ -128,10 +128,9 @@ mod test {
                 "IGS0OPSRAP_20193000000_01D_05M_ORB.SP3"
             );
 
-            sp3.to_file("test4.txt")
-                .unwrap_or_else(|e| {
-                    panic!("Failed to dump data/D/{}: {}", file, e);
-                });
+            sp3.to_file("test4.txt").unwrap_or_else(|e| {
+                panic!("Failed to dump data/D/{}: {}", file, e);
+            });
 
             // parse back
             let _ = SP3::from_file("test4.txt").unwrap_or_else(|e| {
