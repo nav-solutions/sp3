@@ -186,4 +186,25 @@ mod test {
             assert_eq!(entry.orbit_prediction, orbit_prediction);
         }
     }
+
+    #[test]
+    fn sp3_d_predicted_position() {
+        let g01 = SV::from_str("G01").unwrap();
+
+        let content =
+            "PG01 -22335.782004 -14656.280389  -1218.238499   -176.397152 10  9 11 102 EP  MP";
+
+        let position = PositionEntry::from_str(content).unwrap_or_else(|e| {
+            panic!("Failed to parse predicted state \"{}\": {}", content, e);
+        });
+
+        assert_eq!(position.sv, g01);
+        assert_eq!(position.x_km, -22335.782004);
+        assert_eq!(position.y_km, -14656.280389);
+        assert_eq!(position.z_km, -1218.238499);
+        assert!(position.clock_event);
+        assert!(position.clock_prediction);
+        assert!(position.maneuver);
+        assert!(position.orbit_prediction);
+    }
 }

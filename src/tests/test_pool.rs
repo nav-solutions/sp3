@@ -61,11 +61,11 @@ mod test {
             });
 
             // parse back
-            let _ = SP3::from_file("test2.txt").unwrap_or_else(|e| {
+            let parsed_back = SP3::from_file("test2.txt").unwrap_or_else(|e| {
                 panic!("Failed to parse dumped data/C/{}: {}", file, e);
             });
 
-            // assert_eq!(parsed_back, sp3); // TODO
+            assert_eq!(parsed_back, sp3);
         }
     }
 
@@ -133,11 +133,11 @@ mod test {
             });
 
             // parse back
-            let _ = SP3::from_file("test4.txt").unwrap_or_else(|e| {
+            let parsed_back = SP3::from_file("test4.txt").unwrap_or_else(|e| {
                 panic!("Failed to parse dumped data/D/{}: {}", file, e);
             });
 
-            // assert_eq!(parsed_back, sp3); // TODO
+            assert_eq!(parsed_back, sp3); // TODO
         }
     }
 }

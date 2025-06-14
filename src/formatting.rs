@@ -21,11 +21,19 @@ pub(crate) struct CoordsFormatter {
 }
 
 impl CoordsFormatter {
-    pub fn new(value: f64) -> Self {
+    pub fn coordinates(value: f64) -> Self {
         Self {
             value,
             width: 13,
             precision: 6,
+        }
+    }
+
+    pub fn fractional_mjd(value: f64) -> Self {
+        Self {
+            value,
+            width: 15,
+            precision: 13,
         }
     }
 }
@@ -33,7 +41,15 @@ impl CoordsFormatter {
 impl std::fmt::Display for CoordsFormatter {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let value = self.value;
-        let sign_str = if value.is_sign_positive() { " " } else { "" };
+        let sign_str = if self.precision == 13 {
+            ""
+        } else {
+            if value.is_sign_positive() {
+                " "
+            } else {
+                ""
+            }
+        };
 
         let formatted = if value.is_sign_positive() {
             format!(
@@ -83,7 +99,7 @@ impl SP3 {
             //     ss,
             //     nanos / 10
             // )?;
-            writeln!(writer, "*  {}", formatter,)?;
+            writeln!(writer, "*  {}", formatter)?;
 
             for key in self
                 .data
