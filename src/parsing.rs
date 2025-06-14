@@ -151,7 +151,6 @@ impl SP3 {
                 if pc_count == 0 {
                     header.constellation = Constellation::from_str(line[3..5].trim())?;
                     timescale = TimeScale::from_str(line[9..12].trim())?;
-
                     header.timescale = timescale;
                 }
 

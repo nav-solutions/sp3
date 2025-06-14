@@ -1,7 +1,7 @@
 //! header line #2 helpers
 use std::io::{BufWriter, Write};
 
-use crate::{prelude::Duration, FormattingError, ParsingError};
+use crate::{formatting::CoordsFormatter, prelude::Duration, FormattingError, ParsingError};
 
 pub(crate) fn is_header_line2(content: &str) -> bool {
     content.starts_with("##")
@@ -81,14 +81,14 @@ impl Line2 {
 
         write!(
             w,
-            "##{:5} {:6}.{:08} {:5}.{:08} {:05} {:0.13}",
+            "##{:5} {:6}.{:08} {:5}.{:08} {:05} {}",
             self.week,
             week_seconds,
             week_nanos / 10,
             dt_seconds,
             dt_nanos / 10,
             self.mjd_fract.0,
-            self.mjd_fract.1,
+            CoordsFormatter::fractional_mjd(self.mjd_fract.1),
         )?;
 
         Ok(())
