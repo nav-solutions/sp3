@@ -177,14 +177,9 @@ impl Header {
             coord_system: self.coord_system.to_string(),
         };
 
-        let sow_nanos = (
-            (self.week_nanos / 1_000_000_000) as u32,
-            self.week_nanos - self.week_nanos / 1_000_000_000,
-        );
-
         let line2 = Line2 {
             week: self.week,
-            sow_nanos,
+            week_nanos: self.week_nanos,
             mjd_fract: (self.mjd, self.mjd_fraction),
             sampling_period: self.sampling_period,
         };

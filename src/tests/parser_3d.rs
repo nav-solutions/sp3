@@ -28,7 +28,7 @@ mod test {
         assert_eq!(sp3.header.data_type, DataType::Position);
 
         assert_eq!(
-            sp3.first_epoch(),
+            sp3.first_epoch().unwrap(),
             Epoch::from_str("2019-10-27T00:00:00 GPST").unwrap()
         );
 
@@ -63,8 +63,16 @@ mod test {
 
         let t0 = Epoch::from_str("2019-10-27T00:00:00 GPST").unwrap();
 
-        for (epoch, sv, position) in sp3.satellites_position_km_iter() {
+        for (epoch, sv, predicted, maneuver, position) in sp3.satellites_position_km_iter() {
             assert_eq!(epoch, t0);
+
+            if sv == g01 {
+                assert!(predicted);
+                assert!(maneuver);
+            } else {
+                assert!(!predicted);
+                assert!(!maneuver);
+            }
 
             if sv == c01 {
                 assert_eq!(

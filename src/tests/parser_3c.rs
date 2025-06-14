@@ -27,7 +27,7 @@ mod test {
         assert!(!sp3.has_satellite_maneuver());
 
         assert_eq!(
-            sp3.first_epoch(),
+            sp3.first_epoch().unwrap(),
             Epoch::from_str("2023-08-27T00:00:00 GPST").unwrap()
         );
 
@@ -104,7 +104,7 @@ mod test {
 
         assert_eq!(
             sp3.standardized_filename(),
-            "ESO0OPSRAP_20232390000_01D_15M_ORB.SP3.gz"
+            "ESA0OPSRAP_20232390000_01D_15M_ORB.SP3.gz"
         );
     }
 }

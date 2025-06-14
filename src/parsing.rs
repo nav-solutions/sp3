@@ -133,9 +133,7 @@ impl SP3 {
             if is_header_line2(line) {
                 let l2 = Line2::from_str(line)?;
                 header.week = l2.week;
-
-                header.week_nanos = l2.sow_nanos.0 as u64 * 1_000_000_000;
-                header.week_nanos += l2.sow_nanos.1;
+                header.week_nanos = l2.week_nanos;
 
                 header.sampling_period = l2.sampling_period;
 

@@ -27,14 +27,16 @@ mod test {
             });
 
             // dump
-            sp3.to_file("test.txt").unwrap_or_else(|e| {
+            sp3.to_file("test1.txt").unwrap_or_else(|e| {
                 panic!("Failed to dump data/C/{}: {}", file, e);
             });
 
             // parse back
-            let parsed_back = SP3::from_file("test.txt").unwrap_or_else(|e| {
+            let _ = SP3::from_file("test1.txt").unwrap_or_else(|e| {
                 panic!("Failed to parse dumped data/C/{}: {}", file, e);
             });
+
+            // assert_eq!(parsed_back, sp3); // TODO
         }
     }
 
@@ -54,14 +56,16 @@ mod test {
             });
 
             // dump
-            sp3.to_file("test.txt").unwrap_or_else(|e| {
+            sp3.to_file("test2.txt").unwrap_or_else(|e| {
                 panic!("Failed to dump data/C/{}: {}", file, e);
             });
 
             // parse back
-            let parsed_back = SP3::from_file("test.txt").unwrap_or_else(|e| {
+            let _ = SP3::from_file("test2.txt").unwrap_or_else(|e| {
                 panic!("Failed to parse dumped data/C/{}: {}", file, e);
             });
+
+            // assert_eq!(parsed_back, sp3); // TODO
         }
     }
 
@@ -76,7 +80,7 @@ mod test {
         for (file, expected_name) in [
             (
                 "COD0MGXFIN_20230500000_01D_05M_ORB.SP3.gz",
-                "AIU0MGXFIN_202305000000_01D_05M_ORB.SP3.gz",
+                "COD0MGXFIN_202305000000_01D_05M_ORB.SP3.gz",
             ),
             ("Sta21114.sp3.gz", "IAC0OPSRAP_20201770000_01D_15M_ORB.SP3"),
         ] {
@@ -87,12 +91,19 @@ mod test {
                 panic!("failed to parse data/D/{}: {}", file, e);
             });
 
+            assert_eq!(sp3.standardized_filename(), expected_name);
+
             // dump
-            sp3.to_file("test.txt").unwrap_or_else(|e| {
+            sp3.to_file("test3.txt").unwrap_or_else(|e| {
                 panic!("Failed to dump data/D/{}: {}", file, e);
             });
 
-            assert_eq!(sp3.standardized_filename(), expected_name);
+            // parse back
+            let _ = SP3::from_file("test3.txt").unwrap_or_else(|e| {
+                panic!("Failed to parse dumped data/D/{}: {}", file, e);
+            });
+
+            // assert_eq!(parsed_back, sp3); // TODO
         }
     }
 
@@ -116,6 +127,18 @@ mod test {
                 sp3.standardized_filename(),
                 "IGS0OPSRAP_20193000000_01D_05M_ORB.SP3"
             );
+
+            sp3.to_file("test4.txt")
+                .unwrap_or_else(|e| {
+                    panic!("Failed to dump data/D/{}: {}", file, e);
+                });
+
+            // parse back
+            let _ = SP3::from_file("test4.txt").unwrap_or_else(|e| {
+                panic!("Failed to parse dumped data/D/{}: {}", file, e);
+            });
+
+            // assert_eq!(parsed_back, sp3); // TODO
         }
     }
 }

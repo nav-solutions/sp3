@@ -2,7 +2,19 @@ use crate::prelude::{Constellation, Header, SP3};
 
 use qc_traits::{Merge, MergeError};
 
+#[cfg(doc)]
+use qc_traits::Timeshift;
+
+#[cfg(doc)]
+use crate::prelude::TimeScale;
+
 impl Merge for Header {
+    /// Merge `rhs` [SP3] into self, creating a new combined [SP3].
+    /// For this operation to work:
+    /// - data must be published by the same provider
+    /// - both files must be expressed in the same [TimeScale].
+    /// Use our [Timeshift] transpositions if you need it.
+    /// - both files must use the same coordinates system
     fn merge(&self, rhs: &Self) -> Result<Self, MergeError>
     where
         Self: Sized,
@@ -12,6 +24,7 @@ impl Merge for Header {
         Ok(lhs)
     }
 
+    /// [SP3] mutable merge. See [Self::merge] for more information.
     fn merge_mut(&mut self, rhs: &Self) -> Result<(), MergeError> {
         // Verifications
         if self.agency != rhs.agency {

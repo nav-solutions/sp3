@@ -9,8 +9,7 @@ pub(crate) fn is_header_line2(content: &str) -> bool {
 
 pub(crate) struct Line2 {
     pub week: u32,
-
-    pub sow_nanos: (u32, u64),
+    pub week_nanos: u64,
 
     /// MJD and MJD fract
     pub mjd_fract: (u32, f64),
@@ -25,24 +24,23 @@ impl std::str::FromStr for Line2 {
             return Err(ParsingError::MalformedH2);
         }
 
-        let mut sow_nanos = (0_u32, 0_u64);
-
         let week = line[2..7]
             .trim()
             .parse::<u32>()
             .or(Err(ParsingError::WeekCounter))?;
 
-        sow_nanos.0 = line[7..14]
-            .trim()
-            .parse::<u32>()
-            .or(Err(ParsingError::WeekSeconds))?;
-
-        sow_nanos.1 = line[15..23]
+        let week_seconds = line[7..14]
             .trim()
             .parse::<u64>()
             .or(Err(ParsingError::WeekSeconds))?;
 
-        sow_nanos.1 *= 10;
+        let mut week_nanos = line[15..23]
+            .trim()
+            .parse::<u64>()
+            .or(Err(ParsingError::WeekSeconds))?;
+
+        week_nanos *= 10;
+        week_nanos += week_seconds * 1_000_000_000;
 
         let (dt_s, dt_nanos) = (&line[24..29].trim(), &line[30..38].trim());
 
@@ -64,7 +62,7 @@ impl std::str::FromStr for Line2 {
 
         Ok(Self {
             week,
-            sow_nanos,
+            week_nanos,
             mjd_fract: (mjd, mjd_fraction),
             sampling_period: Duration::from_total_nanoseconds(dt_s * 1_000_000_000 + dt_nanos * 10),
         })
@@ -78,12 +76,15 @@ impl Line2 {
         let dt_nanos =
             self.sampling_period.total_nanoseconds() - (dt_seconds as i128) * 1_000_000_000;
 
+        let week_seconds = self.week_nanos / 1_000_000_000;
+        let week_nanos = self.week_nanos - week_seconds * 1_000_000_000;
+
         write!(
             w,
             "##{:5} {:6}.{:08} {:5}.{:08} {:05} {:0.13}",
             self.week,
-            self.sow_nanos.0,
-            self.sow_nanos.1 / 10,
+            week_seconds,
+            week_nanos / 10,
             dt_seconds,
             dt_nanos / 10,
             self.mjd_fract.0,
@@ -197,9 +198,7 @@ mod test {
             let line2 = Line2::from_str(line).unwrap();
 
             assert_eq!(line2.week, week);
-            assert_eq!(line2.sow_nanos.0, sow);
-            assert_eq!(line2.sow_nanos.1, week_nanos);
-
+            assert_eq!(line2.week_nanos, sow * 1_000_000_000 + week_nanos);
             assert_eq!(line2.mjd_fract.0, mjd);
             assert_eq!(line2.mjd_fract.1, mjd_fract);
 
