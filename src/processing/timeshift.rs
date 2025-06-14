@@ -25,7 +25,9 @@ impl Timeshift for SP3 {
             let mjd = converted.to_mjd_utc_days();
             let (week, tow) = converted.to_time_of_week();
 
-            self.header.mjd = mjd;
+            self.header.mjd = mjd.floor() as u32;
+            self.header.mjd_fraction = mjd.fract();
+
             self.header.week = week;
             self.header.week_nanos = tow;
 

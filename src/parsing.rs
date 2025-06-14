@@ -126,20 +126,19 @@ impl SP3 {
                 header.orbit_type = l1.orbit_type;
                 header.agency = l1.agency.to_string();
                 header.num_epochs = l1.num_epochs;
-                header.fit_type = l1.fit_type.to_string();
+                header.observables = l1.observables.to_string();
                 header.release_epoch = l1.epoch;
             }
 
             if is_header_line2(line) {
                 let l2 = Line2::from_str(line)?;
                 header.week = l2.week;
-                header.week_nanos = l2.sow_nanos.0 as u64 * 1_000_000_000;
-                header.week_nanos += l2.sow_nanos.1;
+                header.week_nanos = l2.week_nanos;
 
                 header.sampling_period = l2.sampling_period;
 
-                header.mjd = l2.mjd.0 as f64;
-                header.mjd += l2.mjd.1;
+                header.mjd = l2.mjd_fract.0;
+                header.mjd_fraction = l2.mjd_fract.1;
             }
 
             if file_descriptor(line) {
@@ -186,7 +185,7 @@ impl SP3 {
                     if let Some(e) = data.get_mut(&key) {
                         e.position_km = (entry.x_km, entry.y_km, entry.z_km);
                         e.maneuver = entry.maneuver;
-                        e.orbit_prediction = entry.orbit_prediction;
+                        e.predicted_orbit = entry.orbit_prediction;
                     } else if let Some(clk_us) = entry.clock_us {
                         let value = if entry.orbit_prediction {
                             SP3Entry::from_predicted_position_km((

@@ -48,8 +48,10 @@ let sp3 = SP3::from_gzip_file(&path).unwrap();
 assert_eq!(sp3.header.version, Version::C);
 assert_eq!(sp3.header.data_type, DataType::Position);
 
+let t0 = sp3.first_epoch().unwrap();
+
 assert_eq!(
-    sp3.first_epoch(),
+    t0,
     Epoch::from_str("2023-08-27T00:00:00 GPST").unwrap()
 );
 
@@ -75,8 +77,17 @@ assert_eq!(sp3.header.week_nanos, 0);
 assert_eq!(sp3.header.sampling_period, Duration::from_seconds(900.0_f64));
 
 // Data exploitation
-for (epoch, sv, (x_km_ecef, y_km_ecef, z_km_ecef)) in sp3.satellites_position_km_iter() {
+for (epoch, sv, predicted, maneuver, (x_km_ecef, y_km_ecef, z_km_ecef)) in sp3.satellites_position_km_iter() {
+    
+    if predicted {
+        // results from prediction algorithm, not a fit
+    } else {
+        // results from a fit algorithm, not a prediction
+    }
 
+    if maneuver {
+        // sv being maneuvered: not suited for precise navigation.
+    }
 }
 
 // Data exploitation

@@ -17,7 +17,7 @@ fn satellite_maneuver_flag() {
 
     assert!(sp3.has_satellite_maneuver());
 
-    for (_, sv, _) in sp3.satellites_position_km_iter() {
+    for (_, sv, _, _) in sp3.satellites_stable_position_km_iter() {
         assert!(sv != g01, "vehicles being maneuvered should be excluded");
     }
 

@@ -21,8 +21,12 @@ use line2::Line2;
 #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum DataType {
+    /// [DataType::Position]: provides absolute positions (only).
     #[default]
     Position,
+
+    /// [DataType::Velocity]: absolute position & velocities
+    /// are both provided.
     Velocity,
 }
 
@@ -110,8 +114,22 @@ pub struct Header {
     /// [OrbitType] used in the fitting process prior publication.
     pub orbit_type: OrbitType,
 
-    /// Fit-type
-    pub fit_type: String,
+    /// "Observables" used for this fit, we parse "as is".
+    /// Explanations on typical values:
+    /// - `u`  undifferenced carrier phase
+    /// - `du` change in u with time
+    /// - `s`  2-receiver/1-satellite carrier phase
+    /// - `ds` change on s with time
+    /// - `d` 2-receiver/2-satellite carrier phase
+    /// - `dd` change in d with time
+    /// - `U` undifferenced code phase
+    /// - `dU` change in U with time
+    /// - `S` 2-receiver/1-satellite code phase
+    /// - `dS` change in S with time
+    /// - `D` 2-receiver/2-satellite code phase
+    /// - `dD` change in D with time
+    /// - `+` used as separator
+    pub observables: String,
 
     /// Total number of epochs
     pub num_epochs: u64,
@@ -126,14 +144,17 @@ pub struct Header {
     /// [TimeScale] that applies to all following [Epoch]s.
     pub timescale: TimeScale,
 
-    /// [TimeScale] week counter.
+    /// Total elapsed weeks in [TimeScale].
     pub week: u32,
 
-    /// Total number of nanoseconds in current [TimeScale] week.
+    /// Total number of nanoseconds in current week.
     pub week_nanos: u64,
 
-    /// Datetime of first record entry, expressed as integral and frational MJD in [TimeScale].
-    pub mjd: f64,
+    /// Datetime as MJD (in [TimeScale])
+    pub mjd: u32,
+
+    /// MJD fraction of day (>=0, <1.0)
+    pub mjd_fraction: f64,
 
     /// Sampling period, as [Duration].
     pub sampling_period: Duration,
@@ -152,21 +173,14 @@ impl Header {
             num_epochs: self.num_epochs,
             orbit_type: self.orbit_type,
             agency: self.agency.to_string(),
-            fit_type: self.fit_type.to_string(),
+            observables: self.observables.to_string(),
             coord_system: self.coord_system.to_string(),
         };
 
-        let sow_nanos = (
-            (self.week_nanos / 1_000_000_000) as u32,
-            self.week_nanos - self.week_nanos / 1_000_000_000,
-        );
-
-        let mjd = (self.mjd.floor() as u32, (self.mjd.fract() * 10.0E7));
-
         let line2 = Line2 {
             week: self.week,
-            sow_nanos,
-            mjd,
+            week_nanos: self.week_nanos,
+            mjd_fract: (self.mjd, self.mjd_fraction),
             sampling_period: self.sampling_period,
         };
 
@@ -220,7 +234,7 @@ mod test {
     fn header_formatting() {
         let header = Header {
             version: Version::C,
-            fit_type: "__u+U".to_string(),
+            observables: "__u+U".to_string(),
             release_epoch: Epoch::from_str("2020-01-01T00:00:00 GPST").unwrap(),
             data_type: DataType::Position,
             coord_system: "ITRF93".to_string(),
@@ -231,7 +245,8 @@ mod test {
             timescale: TimeScale::GPST,
             week: 1234,
             week_nanos: 5678,
-            mjd: 12.34,
+            mjd: 12,
+            mjd_fraction: 0.123,
             sampling_period: Duration::from_seconds(900.0),
             satellites: "G01,G02,G03,G04,G05"
                 .split(',')

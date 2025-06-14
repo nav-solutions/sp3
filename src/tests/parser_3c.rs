@@ -2,6 +2,7 @@
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
+    use crate::production::Campaign;
     use gnss::prelude::Constellation;
     use std::path::PathBuf;
     use std::str::FromStr;
@@ -26,7 +27,7 @@ mod test {
         assert!(!sp3.has_satellite_maneuver());
 
         assert_eq!(
-            sp3.first_epoch(),
+            sp3.first_epoch().unwrap(),
             Epoch::from_str("2023-08-27T00:00:00 GPST").unwrap()
         );
 
@@ -40,7 +41,9 @@ mod test {
 
         assert_eq!(sp3.header.week, 2277);
         assert_eq!(sp3.header.week_nanos, 0);
-        assert_eq!(sp3.header.mjd, 60183.0);
+
+        assert_eq!(sp3.header.mjd, 60183);
+        assert_eq!(sp3.header.mjd_fraction, 0.0);
 
         assert_eq!(
             sp3.header.sampling_period,
@@ -85,16 +88,23 @@ mod test {
 
         let attributes = sp3
             .prod_attributes
+            .as_ref()
             .expect("attributes should exist for this file!");
 
         // "ESA0OPSRAP_20232390000_01D_15M_ORB.SP3.gz
         assert_eq!(attributes.agency, "ESA");
         assert_eq!(attributes.batch_id, 0);
+        assert_eq!(attributes.campaign, Campaign::OPS);
         assert_eq!(attributes.availability, Availability::Rapid);
         assert_eq!(attributes.release_date.year, 2023);
         assert_eq!(attributes.release_date.doy, 239);
         assert_eq!(attributes.release_period, ReleasePeriod::Daily);
         assert_eq!(attributes.sampling_period, sp3.header.sampling_period);
         assert!(attributes.gzip_compressed);
+
+        assert_eq!(
+            sp3.standardized_filename(),
+            "ESA0OPSRAP_20232390000_01D_15M_ORB.SP3.gz"
+        );
     }
 }
