@@ -23,7 +23,7 @@ all-features = true
 rustdoc-args = ["--cfg", "docrs", "--generate-link-to-definition"]
 
 [features]
-default = ["flate2", "nyx-space"] # gzip files by default
+default = ["flate2"] # gzip files by default
 
 # File Merging and other high level methods
 qc = [
@@ -36,16 +36,23 @@ processing = [
     "gnss-qc-traits/processing",
 ]
 
+# Unlock Nyx/ANISE features
+anise = [
+    "dep:anise",
+]
+
 # Unlock Nyx propagators for SP3 prediction
 # This feature is released under AGPLv3.
 nyx-space = [
-    "dep:anise",
+    "dep:log",
+    "anise",
     "dep:nyx-space",
 ]   
 
 [dependencies]
 thiserror = "2"
 itertools = "0.14"
+log = { version = "0.4", optional = true }
 anise = { version = "0.6", optional = true, features = ["embed_ephem"] }
 gnss-rs = { version = "2.4.0", features = ["serde"] }
 gnss-qc-traits = { version = "0.3.1", optional = true }
