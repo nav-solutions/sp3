@@ -103,7 +103,7 @@ impl SP3 {
         let mut epoch = Epoch::default();
 
         for line in reader.lines() {
-            let line = line.unwrap();
+            let line = line?;
             let line = line.trim();
 
             if sp3_comment(line) {
