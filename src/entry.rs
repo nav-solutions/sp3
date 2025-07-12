@@ -15,7 +15,7 @@ pub struct SP3Entry {
     /// ECEF position in kilometers with 10⁻³ precision.
     pub position_km: Vector3D,
 
-    /// ECEF velocity vectori in km.s⁻¹.
+    /// ECEF velocity vector in km.s⁻¹ with 100nm/s precision.
     pub velocity_km_s: Option<Vector3D>,
 
     /// True if the state vector is predicted
@@ -215,13 +215,16 @@ impl SP3Entry {
             formatted.push_str(&format!(
                 "\nV{}{}{}{}",
                 sv,
-                CoordsFormatter::coordinates(vel_x_km),
-                CoordsFormatter::coordinates(vel_y_km),
-                CoordsFormatter::coordinates(vel_z_km),
+                CoordsFormatter::coordinates(vel_x_km * 1.0E4), // dm/s
+                CoordsFormatter::coordinates(vel_y_km * 1.0E4), // dm/s
+                CoordsFormatter::coordinates(vel_z_km * 1.0E4), // dm/s
             ));
 
             if let Some(drift_ns) = self.clock_drift_ns {
-                formatted.push_str(&format!("{}", CoordsFormatter::coordinates(drift_ns)));
+                formatted.push_str(&format!(
+                    "{}",
+                    CoordsFormatter::coordinates(drift_ns * 1.0E-2)
+                )); // 0.1 us
             }
         }
 
@@ -511,7 +514,11 @@ mod test {
             let (data, expected) = (
                 SP3Entry {
                     position_km: (15402.861499, 21607.418873, -992.500669),
-                    velocity_km_s: Some((-22859.768469, -8524.538983, -15063.229095)),
+                    velocity_km_s: Some((
+                        -8880.949046 * 1E-4,
+                        -23142.274905 * 1E-4,
+                        -14050.679881 * 1E-4,
+                    )),
                     predicted_orbit: false,
                     maneuver: false,
                     clock_drift_ns: None,
@@ -520,8 +527,9 @@ mod test {
                     clock_us: None,
                 },
                 "PG01  15402.861499  21607.418873   -992.500669
-VG01 -22859.768469  -8524.538983 -15063.229095\n",
+VG01  -8880.949046 -23142.274905 -14050.679881\n",
             );
+
             let mut buf = BufWriter::new(Utf8Buffer::new(1024));
 
             data.format(g01, &mut buf).unwrap_or_else(|e| {
@@ -543,16 +551,20 @@ VG01 -22859.768469  -8524.538983 -15063.229095\n",
             let (data, expected) = (
                 SP3Entry {
                     position_km: (15402.861499, 21607.418873, -992.500669),
-                    velocity_km_s: Some((-22859.768469, -8524.538983, -15063.229095)),
+                    velocity_km_s: Some((
+                        -8880.949046 * 1E-4,
+                        -23142.274905 * 1E-4,
+                        -14050.679881 * 1E-4,
+                    )),
                     predicted_orbit: false,
                     maneuver: false,
-                    clock_drift_ns: Some(-3.292980),
+                    clock_drift_ns: Some(8.9376),
                     clock_event: false,
                     predicted_clock: false,
                     clock_us: None,
                 },
                 "PG01  15402.861499  21607.418873   -992.500669
-VG01 -22859.768469  -8524.538983 -15063.229095     -3.292980\n",
+VG01  -8880.949046 -23142.274905 -14050.679881      0.089376\n",
             );
 
             let mut buf = BufWriter::new(Utf8Buffer::new(1024));
