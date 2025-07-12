@@ -60,8 +60,8 @@ pub enum ParsingError {
     #[error("failed to parse MJD")]
     Mjd,
 
-    #[error("failed to parse sv from \"{0}\"")]
-    SV(String),
+    #[error("failed to parse/identify SV")]
+    SV,
 
     #[error("failed to parse (x, y, or z) coordinates from \"{0}\"")]
     Coordinates(String),
