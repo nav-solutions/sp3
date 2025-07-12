@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 impl SP3 {
     /// Resolve all satellite dynamics for each [Epoch]
-    /// where they were not originally defined (both spatial and temporal).
+    /// where they were not originally defined (both spatial and temporal).  
     /// Modifies the file type to [DataType::Velocity] on success.
     pub fn resolve_dynamics_mut(&mut self) {
         let mut success = false;
@@ -28,7 +28,14 @@ impl SP3 {
                     success = true;
                 }
 
-                if v.clock_drift_ns.is_none() {}
+                if v.clock_drift_ns.is_none() {
+                    if let Some(past_clock_us) = past_state.clock_us {
+                        if let Some(clock_us) = v.clock_us {
+                            v.clock_drift_ns = Some((clock_us - past_clock_us) / dt * 1000.0);
+                            success = true;
+                        }
+                    }
+                }
             }
 
             past_states.insert(k.sv, (k.epoch, *v));
@@ -39,7 +46,7 @@ impl SP3 {
         }
     }
 
-    /// See [Self::resolve_dynamics_mut].
+    /// See [SP3::resolve_dynamics_mut].
     pub fn resolve_dynamics(&self) -> Self {
         let mut s = self.clone();
         s.resolve_dynamics_mut();
@@ -56,7 +63,7 @@ impl SP3 {
                 if v.clock_drift_ns.is_none() {
                     if let Some((past_t, past_state)) = past_states.get(&k.sv) {
                         let dt = (k.epoch - *past_t).to_seconds();
-                        let ddt = (clock_us - past_state) / dt / 1.0E3;
+                        let ddt = (clock_us - past_state) / dt * 1000.0;
                         v.clock_drift_ns = Some(ddt);
                     }
                 }
@@ -65,7 +72,7 @@ impl SP3 {
         }
     }
 
-    /// See [Self::resolve_clock_drift_mut].
+    /// See [SP3::resolve_clock_drift_mut].
     pub fn resolve_clock_drift(&self) -> Self {
         let mut s = self.clone();
         s.resolve_clock_drift_mut();
@@ -73,7 +80,7 @@ impl SP3 {
     }
 
     /// Resolve the velocity vector for each satellite
-    /// for each [Epoch] where it was not originally defined.
+    /// for each [Epoch] where it was not originally defined.  
     /// Modifies the file type to [DataType::Velocity] on success.
     pub fn resolve_velocities_mut(&mut self) {
         let mut success = false;
@@ -103,7 +110,7 @@ impl SP3 {
         }
     }
 
-    /// Refer to [Self::resolve_dynamics_mut].
+    /// Refer to [SP3::resolve_dynamics_mut].
     pub fn resolve_velocities(&self) -> Self {
         let mut s = self.clone();
         s.resolve_velocities_mut();
@@ -137,17 +144,22 @@ mod test {
         let tlast_gpst = Epoch::from_str("2020-06-25T23:45:00 GPST").unwrap();
 
         let velocities = sp3.resolve_velocities();
+        assert_eq!(
+            velocities.header.data_type,
+            DataType::Velocity,
+            "should have modified file type"
+        );
+
         let dynamics = sp3.resolve_dynamics();
+        assert_eq!(
+            dynamics.header.data_type,
+            DataType::Velocity,
+            "should have modified file type"
+        );
 
         for (k, v) in velocities.data.iter() {
             if k.epoch == t0_gpst {
-                if k.sv == e01 {
-                    assert!(v.velocity_km_s.is_none(), "not feasible on 1st epoch");
-                    tests += 1;
-                } else if k.sv == g03 {
-                    assert!(v.velocity_km_s.is_none(), "not feasible on 1st epoch");
-                    tests += 1;
-                }
+                assert!(v.velocity_km_s.is_none(), "not feasible on 1st epoch");
             } else {
                 assert!(v.velocity_km_s.is_some(), "should have been resolved");
             }
@@ -215,19 +227,13 @@ mod test {
             }
         }
 
-        assert_eq!(tests, 7);
+        assert_eq!(tests, 5);
 
         let mut tests = 0;
 
         for (k, v) in dynamics.data.iter() {
             if k.epoch == t0_gpst {
-                if k.sv == e01 {
-                    assert!(v.velocity_km_s.is_none(), "not feasible on 1st epoch");
-                    tests += 1;
-                } else if k.sv == g03 {
-                    assert!(v.velocity_km_s.is_none(), "not feasible on 1st epoch");
-                    tests += 1;
-                }
+                assert!(v.velocity_km_s.is_none(), "not feasible on 1st epoch");
             } else {
                 assert!(v.velocity_km_s.is_some(), "should have been resolved");
             }
@@ -243,6 +249,12 @@ mod test {
                         ))
                     );
 
+                    let drift = (-884.714669 * 1000.0 - -884.707516 * 1000.0) / dt;
+
+                    let value = v.clock_drift_ns.expect("should exist");
+
+                    assert!((drift - value).abs() < 1.0E-13);
+
                     tests += 1;
                 } else if k.sv == g03 {
                     assert_eq!(
@@ -253,6 +265,12 @@ mod test {
                             (-21871.749478 - -21555.137342) / dt,
                         ))
                     );
+
+                    let drift = (-219.533549 * 1000.0 - -219.522697 * 1000.0) / dt;
+
+                    let value = v.clock_drift_ns.expect("should exist");
+
+                    assert!((drift - value).abs() < 1.0E-13);
 
                     tests += 1;
                 }
@@ -280,6 +298,13 @@ mod test {
                             (-1746.625183 - -4470.989394) / dt,
                         )),
                     );
+
+                    let drift = (-885.385311 * 1000.0 - -885.378139 * 1000.0) / dt;
+
+                    let value = v.clock_drift_ns.expect("should exist");
+
+                    assert!((drift - value).abs() < 1.0E-13);
+
                     tests += 1;
                 } else if k.sv == g03 {
                     assert_eq!(
@@ -290,12 +315,18 @@ mod test {
                             (-21098.565457 - -20155.414780) / dt,
                         ))
                     );
+
+                    let drift = (-220.547387 * 1000.0 - -220.536568 * 1000.0) / dt;
+
+                    let value = v.clock_drift_ns.expect("should be resolved");
+                    assert!((drift - value).abs() < 1.0E-13);
+
                     tests += 1;
                 }
             }
         }
 
-        assert_eq!(tests, 7);
+        assert_eq!(tests, 5);
 
         // test specific iterators
 
@@ -346,6 +377,72 @@ mod test {
                             (-21098.565457 - -20155.414780) / dt,
                         )
                     );
+                    tests += 1;
+                }
+            }
+        }
+
+        assert_eq!(tests, 4);
+    }
+
+    #[test]
+    fn dynamics_clock_drift() {
+        let sp3 =
+            SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201770000_01D_15M_ORB.SP3.gz").unwrap();
+
+        assert_eq!(sp3.header.data_type, DataType::Position);
+
+        let dt = Duration::from_hours(0.25).to_seconds();
+
+        let e01 = SV::from_str("E01").unwrap();
+        let g03 = SV::from_str("G03").unwrap();
+
+        let t0_gpst = Epoch::from_str("2020-06-25T00:00:00 GPST").unwrap();
+        let t1_gpst = Epoch::from_str("2020-06-25T00:15:00 GPST").unwrap();
+        let t2_gpst = Epoch::from_str("2020-06-25T00:30:00 GPST").unwrap();
+        let tlast_gpst = Epoch::from_str("2020-06-25T23:45:00 GPST").unwrap();
+
+        let dynamics = sp3.resolve_dynamics();
+        let clock_drifts = sp3.resolve_clock_drift();
+
+        for (k, v) in clock_drifts.data.iter() {
+            assert!(v.velocity_km_s.is_none(), "should not have been resolved");
+
+            if k.epoch == t0_gpst {
+                assert!(v.clock_drift_ns.is_none(), "not feasible on 1st epoch");
+            } else {
+                assert!(v.clock_drift_ns.is_some(), "should have been resolved");
+            }
+        }
+
+        // test specific iterators
+        let mut tests = 0;
+
+        for (epoch, sv, clock_drift_s) in clock_drifts.satellites_clock_drift_sec_sec_iter() {
+            assert!(epoch != t0_gpst, "1st epoch should not exist");
+
+            if epoch == t1_gpst {
+                if sv == e01 {
+                    let drift = (-884.714669 * 1E-6 - -884.707516 * 1E-6) / dt;
+
+                    assert!((clock_drift_s - drift).abs() < 1.0E-13);
+                    tests += 1;
+                } else if sv == g03 {
+                    let drift = (-219.533549 * 1E-6 - -219.522697 * 1E-6) / dt;
+
+                    assert!((clock_drift_s - drift).abs() < 1.0E-13);
+                    tests += 1;
+                }
+            } else if epoch == tlast_gpst {
+                if sv == e01 {
+                    let drift = (-885.385311 * 1E-6 - -885.378139 * 1E-6) / dt;
+
+                    assert!((clock_drift_s - drift).abs() < 1.0E-13);
+                    tests += 1;
+                } else if sv == g03 {
+                    let drift = (-220.547387 * 1E-6 - -220.536568 * 1E-6) / dt;
+
+                    assert!((clock_drift_s - drift).abs() < 1.0E-13);
                     tests += 1;
                 }
             }
