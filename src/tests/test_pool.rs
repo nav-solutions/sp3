@@ -26,13 +26,15 @@ mod test {
                 panic!("failed to parse data/C/{}: {}", file, e);
             });
 
+            let proposed = sp3.standardized_filename();
+
             // dump
-            sp3.to_file("test1.txt").unwrap_or_else(|e| {
+            sp3.to_file(&proposed).unwrap_or_else(|e| {
                 panic!("Failed to dump data/C/{}: {}", file, e);
             });
 
             // parse back
-            let _ = SP3::from_file("test1.txt").unwrap_or_else(|e| {
+            let _ = SP3::from_file(&proposed).unwrap_or_else(|e| {
                 panic!("Failed to parse dumped data/C/{}: {}", file, e);
             });
 
@@ -55,13 +57,15 @@ mod test {
                 panic!("failed to parse data/C/{}: {}", file, e);
             });
 
+            let proposed = sp3.standardized_filename();
+
             // dump
-            sp3.to_file("test2.txt").unwrap_or_else(|e| {
+            sp3.to_file(&proposed).unwrap_or_else(|e| {
                 panic!("Failed to dump data/C/{}: {}", file, e);
             });
 
             // parse back
-            let parsed_back = SP3::from_file("test2.txt").unwrap_or_else(|e| {
+            let parsed_back = SP3::from_file(&proposed).unwrap_or_else(|e| {
                 panic!("Failed to parse dumped data/C/{}: {}", file, e);
             });
 
@@ -91,15 +95,17 @@ mod test {
                 panic!("failed to parse data/D/{}: {}", file, e);
             });
 
-            assert_eq!(sp3.standardized_filename(), expected_name);
+            let proposed = sp3.standardized_filename();
+
+            assert_eq!(proposed, expected_name);
 
             // dump
-            sp3.to_file("test3.txt").unwrap_or_else(|e| {
+            sp3.to_file(&proposed).unwrap_or_else(|e| {
                 panic!("Failed to dump data/D/{}: {}", file, e);
             });
 
             // parse back
-            let _ = SP3::from_file("test3.txt").unwrap_or_else(|e| {
+            let _ = SP3::from_file(&proposed).unwrap_or_else(|e| {
                 panic!("Failed to parse dumped data/D/{}: {}", file, e);
             });
 
@@ -123,17 +129,16 @@ mod test {
                 panic!("failed to parse data/D/{}: {}", file, e);
             });
 
-            assert_eq!(
-                sp3.standardized_filename(),
-                "IGS0OPSRAP_20193000000_01D_05M_ORB.SP3"
-            );
+            let proposed = sp3.standardized_filename();
 
-            sp3.to_file("test4.txt").unwrap_or_else(|e| {
+            assert_eq!(proposed, "IGS0OPSRAP_20193000000_01D_05M_ORB.SP3");
+
+            sp3.to_file(&proposed).unwrap_or_else(|e| {
                 panic!("Failed to dump data/D/{}: {}", file, e);
             });
 
             // parse back
-            let parsed_back = SP3::from_file("test4.txt").unwrap_or_else(|e| {
+            let parsed_back = SP3::from_file(&proposed).unwrap_or_else(|e| {
                 panic!("Failed to parse dumped data/D/{}: {}", file, e);
             });
 
@@ -169,13 +174,15 @@ mod test {
                 panic!("failed to parse data/A/{}: {}", file, e);
             });
 
+            let proposed = sp3.standardized_filename();
+
             // dump
-            sp3.to_file("test1.txt").unwrap_or_else(|e| {
+            sp3.to_file(&proposed).unwrap_or_else(|e| {
                 panic!("Failed to dump data/A/{}: {}", file, e);
             });
 
             // parse back
-            let _ = SP3::from_file("test1.txt").unwrap_or_else(|e| {
+            let _ = SP3::from_file(&proposed).unwrap_or_else(|e| {
                 panic!("Failed to parse dumped data/C/{}: {}", file, e);
             });
 
