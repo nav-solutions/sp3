@@ -399,10 +399,8 @@ mod test {
 
         let t0_gpst = Epoch::from_str("2020-06-25T00:00:00 GPST").unwrap();
         let t1_gpst = Epoch::from_str("2020-06-25T00:15:00 GPST").unwrap();
-        let t2_gpst = Epoch::from_str("2020-06-25T00:30:00 GPST").unwrap();
         let tlast_gpst = Epoch::from_str("2020-06-25T23:45:00 GPST").unwrap();
 
-        let dynamics = sp3.resolve_dynamics();
         let clock_drifts = sp3.resolve_clock_drift();
 
         for (k, v) in clock_drifts.data.iter() {

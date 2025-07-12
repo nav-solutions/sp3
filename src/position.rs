@@ -1,6 +1,10 @@
 //! Position & Clock data parsing
-use crate::ParsingError;
-use crate::SV;
+use crate::{
+    errors::ParsingError,
+    prelude::{Constellation, Version, SV},
+};
+
+use std::str::FromStr;
 
 pub fn position_entry(content: &str) -> bool {
     content.starts_with('P')
@@ -18,9 +22,8 @@ pub struct PositionEntry {
     pub orbit_prediction: bool,
 }
 
-impl std::str::FromStr for PositionEntry {
-    type Err = ParsingError;
-    fn from_str(line: &str) -> Result<Self, Self::Err> {
+impl PositionEntry {
+    pub fn parse(line: &str, revision: Version) -> Result<Self, ParsingError> {
         let line_len = line.len();
 
         let mut clock_event = false;
@@ -30,8 +33,18 @@ impl std::str::FromStr for PositionEntry {
 
         let mut clock_us: Option<f64> = None;
 
-        let sv =
-            SV::from_str(line[1..4].trim()).or(Err(ParsingError::SV(line[1..4].to_string())))?;
+        let sv = match revision {
+            Version::A => {
+                // GPS-Only: constellation might be omitted
+                let prn = line[2..4].trim().parse::<u8>().or(Err(ParsingError::SV))?;
+
+                SV::new(Constellation::GPS, prn)
+            },
+            _ => {
+                // parsing needs to pass
+                SV::from_str(line[1..4].trim()).or(Err(ParsingError::SV))?
+            },
+        };
 
         let x = f64::from_str(line[4..18].trim())
             .or(Err(ParsingError::Coordinates(line[4..18].to_string())))?;
@@ -82,12 +95,11 @@ impl std::str::FromStr for PositionEntry {
 #[cfg(test)]
 mod test {
     use super::PositionEntry;
-    use crate::prelude::SV;
+    use crate::prelude::{Version, SV};
     use std::str::FromStr;
 
     #[test]
     fn position_entry_parsing() {
-        // "PG01 -22335.782004 -14656.280389  -1218.238499   -176.397152 10  9 11 102 EP  MP",
         for (
             content,
             sv,
@@ -174,7 +186,7 @@ mod test {
             ),
         ] {
             let sv = SV::from_str(sv).unwrap();
-            let entry = PositionEntry::from_str(content).unwrap();
+            let entry = PositionEntry::parse(content, Version::C).unwrap();
             assert_eq!(entry.sv, sv);
             assert_eq!(entry.x_km, x_km);
             assert_eq!(entry.y_km, y_km);
@@ -194,7 +206,7 @@ mod test {
         let content =
             "PG01 -22335.782004 -14656.280389  -1218.238499   -176.397152 10  9 11 102 EP  MP";
 
-        let position = PositionEntry::from_str(content).unwrap_or_else(|e| {
+        let position = PositionEntry::parse(content, Version::C).unwrap_or_else(|e| {
             panic!("Failed to parse predicted state \"{}\": {}", content, e);
         });
 

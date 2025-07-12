@@ -140,4 +140,45 @@ mod test {
             assert_eq!(parsed_back, sp3); // TODO
         }
     }
+
+    #[test]
+    fn rev_a() {
+        let prefix = PathBuf::new()
+            .join(env!("CARGO_MANIFEST_DIR"))
+            .join("data/SP3")
+            .join("A");
+
+        for file in [
+            // "emr08874.sp3",
+            "p0NGA237351",
+            "p1NGA237361",
+            "p2NGA237401",
+            "p3NGA237411",
+            "p4NGA237421",
+            "p5NGA237431",
+            "p6NGA237441",
+            "p7NGA237451",
+            "p8NGA237461",
+            // "sio06492.sp3",
+        ] {
+            let file_path = prefix.clone().join(file);
+            println!("Parsing file \"{}\"", file_path.to_string_lossy());
+
+            let sp3 = SP3::from_file(&file_path).unwrap_or_else(|e| {
+                panic!("failed to parse data/A/{}: {}", file, e);
+            });
+
+            // dump
+            sp3.to_file("test1.txt").unwrap_or_else(|e| {
+                panic!("Failed to dump data/A/{}: {}", file, e);
+            });
+
+            // parse back
+            let _ = SP3::from_file("test1.txt").unwrap_or_else(|e| {
+                panic!("Failed to parse dumped data/C/{}: {}", file, e);
+            });
+
+            // assert_eq!(parsed_back, sp3); // TODO
+        }
+    }
 }
