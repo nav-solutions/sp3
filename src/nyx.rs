@@ -71,14 +71,14 @@ pub struct SpacecraftTrajectory {
 }
 
 impl SP3 {
-    /// Obtain a [Spacecraft] model, at desired [Epoch] for desired [SV]
+    /// Obtain a [SpacecraftModel] at desired [Epoch] for desired [SV].
     ///
-    /// NB: Only the satellites for which the dynamics were either provided or
-    /// post-fitted may be converted to a [Spacecraft] model.
-    /// Because we use this model mostly in orbital determination or prediction processes,
-    /// which require the full 6 dimension model to be determined.
-    /// You can use [SP3::resolve_dynamics_mut] or [SP3::resolve_velocities_mut] to resolve
-    /// the dynamics if this not a [DataType::Velocity] file.
+    /// NB: Only the satellites for which the dynamics are fully resolved can be
+    /// converted into a [SpacecraftModel]. Because we use this structure for
+    /// Orbit Determination (OD) processes, which requires the 6 dimension vector to be fully
+    /// resolved. When coming from a [DataType::Position] file, you can use
+    /// [SP3::resolve_dynamics_mut] or [SP3::resolve_velocities_mut] to manually resolve
+    /// the dynamics first.
     pub fn spacecraft_model(&self, epoch: Epoch, sv: SV) -> Option<SpacecraftModel> {
         self.spacecraft_model_iter(epoch)
             .filter_map(|model| {
@@ -91,14 +91,15 @@ impl SP3 {
             .reduce(|k, _| k)
     }
 
-    /// Obtain a [Spacecraft] model at desired [Epoch], for each satellite.
+    /// Iterate over each satellite, converted into a [SpacecraftModel] initialized
+    /// at desired [Epoch].
     ///
-    /// NB: Only the satellites for which the dynamics were either provided or
-    /// post-fitted may be converted to a [Spacecraft] model.
-    /// Because we use this model mostly in orbital determination or prediction processes,
-    /// which require the full 6 dimension model to be determined.
-    /// You can use [SP3::resolve_dynamics_mut] or [SP3::resolve_velocities_mut] to resolve
-    /// the dynamics if this not a [DataType::Velocity] file.
+    /// NB: Only the satellites for which the dynamics are fully resolved can be
+    /// converted into a [SpacecraftModel]. Because we use this structure for
+    /// Orbit Determination (OD) processes, which requires the 6 dimension vector to be fully
+    /// resolved. When coming from a [DataType::Position] file, you can use
+    /// [SP3::resolve_dynamics_mut] or [SP3::resolve_velocities_mut] to manually resolve
+    /// the dynamics first.
     pub fn spacecraft_model_iter(
         &self,
         epoch: Epoch,
