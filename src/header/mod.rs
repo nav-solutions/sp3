@@ -21,12 +21,14 @@ use line2::Line2;
 #[derive(Default, Copy, Clone, Debug, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum DataType {
-    /// [DataType::Position]: provides absolute positions (only).
+    /// [DataType::Position] means this file provides state vectors only
+    /// (spatial is mandatory, clock state is optional).
     #[default]
     Position,
 
-    /// [DataType::Velocity]: absolute position & velocities
-    /// are both provided.
+    /// [DataType::Velocity] means this file provides both state vectors
+    /// and velocity vectors. The clock drift (clock state derivative) is once
+    /// again optional.
     Velocity,
 }
 
