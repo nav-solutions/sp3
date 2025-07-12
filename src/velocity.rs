@@ -1,6 +1,10 @@
 //! Velocity entry parsing
-use crate::ParsingError;
-use crate::SV;
+use crate::{
+    errors::ParsingError,
+    prelude::{Constellation, Version, SV},
+};
+
+use std::str::FromStr;
 
 pub fn velocity_entry(content: &str) -> bool {
     content.starts_with('V')
@@ -12,16 +16,29 @@ pub struct VelocityEntry {
     clock: Option<f64>,
 }
 
-impl std::str::FromStr for VelocityEntry {
-    type Err = ParsingError;
-    fn from_str(line: &str) -> Result<Self, Self::Err> {
+impl VelocityEntry {
+    pub fn parse(line: &str, revision: Version) -> Result<Self, ParsingError> {
         let mut clock: Option<f64> = None;
-        let sv =
-            SV::from_str(line[1..4].trim()).or(Err(ParsingError::SV(line[1..4].to_string())))?;
+
+        let sv = match revision {
+            Version::A => {
+                // GPS-Only: constellation might be omitted
+                let prn = line[2..4].trim().parse::<u8>().or(Err(ParsingError::SV))?;
+
+                SV::new(Constellation::GPS, prn)
+            },
+            _ => {
+                // parsing needs to pass
+                SV::from_str(line[1..4].trim()).or(Err(ParsingError::SV))?
+            },
+        };
+
         let x = f64::from_str(line[4..18].trim())
             .or(Err(ParsingError::Coordinates(line[4..18].to_string())))?;
+
         let y = f64::from_str(line[18..32].trim())
             .or(Err(ParsingError::Coordinates(line[18..32].to_string())))?;
+
         let z = f64::from_str(line[32..46].trim())
             .or(Err(ParsingError::Coordinates(line[32..46].to_string())))?;
 

@@ -48,6 +48,7 @@ use anise::{
 #[cfg(test)]
 mod tests;
 
+mod dynamics;
 mod entry;
 mod errors;
 mod formatting;

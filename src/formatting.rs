@@ -122,7 +122,7 @@ impl SP3 {
 
     /// Dumps [SP3] into writable local file (as readable ASCII UTF-8),
     /// using efficient buffered formatting.
-    /// This is the mirror operation of [Self::from_file]
+    /// This is the mirror operation of [SP3::from_file]
     /// ```
     /// use sp3::prelude::*;
     ///
@@ -137,7 +137,31 @@ impl SP3 {
         Ok(())
     }
 
-    /// Dumps [SP3] into Gzip compressed file.
+    /// Dumps [SP3] into Gzip compressed file.  
+    /// This is the [SP3::from_gzip_file] mirror operation.
+    /// ```
+    /// use sp3::prelude::*;
+    ///
+    /// // Parse readable ASCII file
+    /// let sp3 = SP3::from_file("data/SP3/D/example.txt")
+    ///     .unwrap();
+    ///
+    /// // Dump and compress at the same time
+    /// assert!(sp3.to_gzip_file("output.sp3.gz").is_ok());
+    ///
+    /// // Use our file name determination method
+    /// // NB: coming from plain/readable ASCII
+    /// let filename = format!(
+    ///     "{}.gz",
+    ///     sp3.standardized_filename(),
+    /// );
+    ///
+    /// assert!(sp3.to_gzip_file(filename).is_ok());
+    ///
+    /// // parse this file back
+    /// let _ = SP3::from_gzip_file("IGS0OPSRAP_20193000000_01D_05M_ORB.SP3.gz")
+    ///     .unwrap();
+    /// ```
     #[cfg(feature = "flate2")]
     #[cfg_attr(docsrs, doc(cfg(feature = "flate2")))]
     pub fn to_gzip_file<P: AsRef<Path>>(&self, path: P) -> Result<(), FormattingError> {

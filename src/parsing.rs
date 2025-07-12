@@ -17,7 +17,7 @@ use crate::{
     position::{position_entry, PositionEntry},
     prelude::{
         Constellation, Epoch, Error, Header, ParsingError, ProductionAttributes, SP3Entry, SP3Key,
-        TimeScale, SP3, SV,
+        TimeScale, Version, SP3, SV,
     },
     velocity::{velocity_entry, VelocityEntry},
 };
@@ -103,7 +103,7 @@ impl SP3 {
         let mut epoch = Epoch::default();
 
         for line in reader.lines() {
-            let line = line.unwrap();
+            let line = line?;
             let line = line.trim();
 
             if sp3_comment(line) {
@@ -148,10 +148,18 @@ impl SP3 {
                     )));
                 }
 
-                if pc_count == 0 {
-                    header.constellation = Constellation::from_str(line[3..5].trim())?;
-                    timescale = TimeScale::from_str(line[9..12].trim())?;
-                    header.timescale = timescale;
+                // no need to parse this line, since Rev-A is limited
+                // to GPS-Only
+                if header.version == Version::A {
+                    header.constellation = Constellation::GPS;
+                    header.timescale = TimeScale::GPST;
+                } else {
+                    // Constellation identification needs to pass
+                    if pc_count == 0 {
+                        header.constellation = Constellation::from_str(line[3..5].trim())?;
+                        timescale = TimeScale::from_str(line[9..12].trim())?;
+                        header.timescale = timescale;
+                    }
                 }
 
                 pc_count += 1;
@@ -167,7 +175,7 @@ impl SP3 {
                     continue;
                 }
 
-                let entry = PositionEntry::from_str(line)?;
+                let entry = PositionEntry::parse(line, header.version)?;
 
                 //TODO : move this into %c config frame
                 if !vehicles.contains(&entry.sv) {
@@ -227,7 +235,7 @@ impl SP3 {
                     continue;
                 }
 
-                let entry = VelocityEntry::from_str(line)?;
+                let entry = VelocityEntry::parse(line, header.version)?;
                 let (sv, (vel_x_dm_s, vel_y_dm_s, vel_z_dm_s), clk_sub_ns) = entry.to_parts();
 
                 let (vel_x_km_s, vel_y_km_s, vel_z_km_s) = (

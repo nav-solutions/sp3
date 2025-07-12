@@ -17,3 +17,7 @@ Cargo.lock
 *.swp
 *.txt
 *.sp3
+*.SP3
+*.gz
+*.SP3.gz
+*.DS_Store
