@@ -45,7 +45,7 @@ mod nyx;
 #[cfg(test)]
 mod tests;
 
-mod constants;
+// mod constants;
 mod dynamics;
 mod entry;
 mod errors;
@@ -61,6 +61,9 @@ use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "anise")]
 pub use anise::{SatelliteOrbitalAttitude, SatelliteOrbitalState};
+
+#[cfg(feature = "nyx-space")]
+pub use nyx::{SpacecraftModel, SpacecraftTrajectory};
 
 use header::Header;
 use hifitime::Unit;

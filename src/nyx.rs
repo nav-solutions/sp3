@@ -22,7 +22,7 @@ use anise::{
         celestial_objects::{MOON, SUN},
         frames::EARTH_J2000,
     },
-    prelude::Almanac,
+    prelude::{Almanac, Frame},
 };
 
 use std::sync::Arc;
@@ -51,6 +51,7 @@ pub enum PredictionError {
     NyxDynamics(#[from] NyxDynamicsError),
 }
 
+#[derive(Copy, Clone)]
 pub struct SpacecraftModel {
     /// Satellite identity as [SV]
     pub satellite: SV,
@@ -79,8 +80,14 @@ impl SP3 {
     /// resolved. When coming from a [DataType::Position] file, you can use
     /// [SP3::resolve_dynamics_mut] or [SP3::resolve_velocities_mut] to manually resolve
     /// the dynamics first.
-    pub fn spacecraft_model(&self, epoch: Epoch, sv: SV) -> Option<SpacecraftModel> {
-        self.spacecraft_model_iter(epoch)
+    ///
+    /// ## Inputs
+    /// - epoch: [Epoch] of model initialization, that must exist in this file
+    /// and have spatial dynamics resolved.
+    /// - sv: [SV] that must exist in this file.
+    /// - frame: ECEF [Frame] model with gravitational constant.
+    pub fn spacecraft_model(&self, epoch: Epoch, sv: SV, frame: Frame) -> Option<SpacecraftModel> {
+        self.spacecraft_model_iter(epoch, frame)
             .filter_map(|model| {
                 if model.satellite == sv {
                     Some(model)
@@ -100,11 +107,17 @@ impl SP3 {
     /// resolved. When coming from a [DataType::Position] file, you can use
     /// [SP3::resolve_dynamics_mut] or [SP3::resolve_velocities_mut] to manually resolve
     /// the dynamics first.
+    ///
+    /// ## Inputs
+    /// - epoch: [Epoch] of model initialization, that must exist in this file
+    /// and have spatial dynamics resolved.
+    /// - frame: ECEF [Frame] model with gravitational constant.
     pub fn spacecraft_model_iter(
         &self,
         epoch: Epoch,
+        frame: Frame,
     ) -> Box<dyn Iterator<Item = SpacecraftModel> + '_> {
-        Box::new(self.satellites_orbit_iter().filter_map(move |state| {
+        Box::new(self.satellites_orbit_iter(frame).filter_map(move |state| {
             if state.orbit.has_velocity_dynamics() && state.epoch == epoch {
                 let sc_model = Spacecraft::builder().orbit(state.orbit).build();
 
@@ -123,6 +136,7 @@ impl SP3 {
     ///
     /// ## Input
     /// - almanac: [Almanac] definition
+    /// - frame: ECEF [Frame] model with gravitational constant.
     /// - initial_epoch: possible initial [Epoch].
     /// When undefine
     /// When undefined, we simply use the latest state in time.
@@ -136,6 +150,7 @@ impl SP3 {
     pub fn trajectory_predictions_iter(
         &self,
         almanac: Arc<Almanac>,
+        frame: Frame,
         initial_epoch: Option<Epoch>,
         duration: Duration,
     ) -> Result<Box<dyn Iterator<Item = SpacecraftTrajectory> + '_>, PredictionError> {
@@ -157,7 +172,7 @@ impl SP3 {
         // create a propagator for each satellite
         // using the same solar pressure and dynamics model
         let iter = self
-            .spacecraft_model_iter(initial_epoch)
+            .spacecraft_model_iter(initial_epoch, frame)
             .filter_map(move |spacecraft| {
                 let dynamics = dynamics.clone();
 
@@ -190,11 +205,12 @@ impl SP3 {
     pub fn spatial_prediction(
         &self,
         almanac: Arc<Almanac>,
+        frame: Frame,
         initial_epoch: Option<Epoch>,
         duration: Duration,
     ) -> Result<Self, PredictionError> {
         let mut s = self.clone();
-        s.spatial_prediction_mut(almanac, initial_epoch, duration)?;
+        s.spatial_prediction_mut(almanac, frame, initial_epoch, duration)?;
         Ok(s)
     }
 
@@ -203,6 +219,7 @@ impl SP3 {
     ///
     /// ## Input
     /// - almanac: [Almanac]
+    /// - frame: ECEF [Frame] model with gravitational constant.
     /// - initial_epoch: Possible custom [Epoch] offset
     /// used to determine the initial state. When set to None,
     /// we will use the latest state described by this [SP3].
@@ -212,6 +229,7 @@ impl SP3 {
     pub fn spatial_prediction_mut(
         &mut self,
         almanac: Arc<Almanac>,
+        frame: Frame,
         initial_epoch: Option<Epoch>,
         duration: Duration,
     ) -> Result<(), PredictionError> {
@@ -231,7 +249,7 @@ impl SP3 {
 
         // obtain a predicted trajectory for each satellite
         let satellite_trajectories = self
-            .trajectory_predictions_iter(almanac, Some(initial_epoch), duration)?
+            .trajectory_predictions_iter(almanac, frame, Some(initial_epoch), duration)?
             .collect::<Vec<_>>();
 
         let interp_sampling_period = Duration::from_seconds(1.0);
@@ -292,7 +310,8 @@ mod test {
         tests::init_logger,
     };
 
-    use anise::prelude::Almanac;
+    use anise::{constants::frames::EARTH_J2000, prelude::Almanac};
+
     use std::str::FromStr;
     use std::sync::Arc;
 
@@ -300,6 +319,8 @@ mod test {
     fn forward_spatial_propagation() {
         init_logger();
         let almanac = Arc::new(Almanac::until_2035().unwrap());
+
+        let earth_cef = almanac.frame_from_uid(EARTH_J2000).unwrap();
 
         let mut parsed =
             SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201770000_01D_15M_ORB.SP3.gz").unwrap();
@@ -314,7 +335,7 @@ mod test {
         let (morning, _) = parsed.split(noon);
 
         let predicted = morning
-            .spatial_prediction(almanac, Some(noon), Duration::from_hours(12.0))
+            .spatial_prediction(almanac, earth_cef, Some(noon), Duration::from_hours(12.0))
             .unwrap_or_else(|e| {
                 panic!("SP3 (spatial) prediction failed with: {}", e);
             });
@@ -345,6 +366,8 @@ mod test {
         init_logger();
         let almanac = Arc::new(Almanac::until_2035().unwrap());
 
+        let earth_cef = almanac.frame_from_uid(EARTH_J2000).unwrap();
+
         let mut parsed =
             SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201770000_01D_15M_ORB.SP3.gz").unwrap();
 
@@ -354,7 +377,12 @@ mod test {
         let midnight = Epoch::from_str("2020-06-25T00:00:00 GPST").unwrap();
 
         let predicted = parsed
-            .spatial_prediction(almanac, Some(midnight), -Duration::from_hours(24.0))
+            .spatial_prediction(
+                almanac,
+                earth_cef,
+                Some(midnight),
+                -Duration::from_hours(24.0),
+            )
             .unwrap_or_else(|e| {
                 panic!("SP3 (spatial) prediction failed with: {}", e);
             });
@@ -362,6 +390,12 @@ mod test {
         // parse actual data for that day
         let model =
             SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201760000_01D_15M_ORB.SP3.gz").unwrap();
+
+        assert_eq!(
+            predicted.first_epoch(),
+            model.first_epoch(),
+            "backwards prediction did not extend correctly"
+        );
 
         // compute residuals
         let residuals = predicted.substract(&model);
@@ -377,8 +411,9 @@ mod test {
     #[test]
     fn spatial_propagation_without_dynamics() {
         init_logger();
-
         let almanac = Arc::new(Almanac::until_2035().unwrap());
+
+        let earth_cef = almanac.frame_from_uid(EARTH_J2000).unwrap();
 
         let parsed =
             SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201770000_01D_15M_ORB.SP3.gz").unwrap();
@@ -387,7 +422,12 @@ mod test {
         let noon_offset = midnight + Duration::from_hours(12.0);
 
         let predicted = parsed
-            .spatial_prediction(almanac, Some(noon_offset), Duration::from_hours(12.0))
+            .spatial_prediction(
+                almanac,
+                earth_cef,
+                Some(noon_offset),
+                Duration::from_hours(12.0),
+            )
             .unwrap_or_else(|e| {
                 panic!("SP3 (spatial) prediction failed with: {}", e);
             });
