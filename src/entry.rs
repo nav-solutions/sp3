@@ -199,7 +199,6 @@ impl SP3Entry {
             formatted.push_str("   ");
         }
 
-        //10  9 11 102 EP  MP
         if self.maneuver {
             formatted.push('M');
         } else {
