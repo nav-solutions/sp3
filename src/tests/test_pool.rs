@@ -142,6 +142,7 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "flate2")]
     fn rev_a() {
         let prefix = PathBuf::new()
             .join(env!("CARGO_MANIFEST_DIR"))
@@ -149,22 +150,22 @@ mod test {
             .join("A");
 
         for file in [
-            // "emr08874.sp3",
-            "p0NGA237351",
-            "p1NGA237361",
-            "p2NGA237401",
-            "p3NGA237411",
-            "p4NGA237421",
-            "p5NGA237431",
-            "p6NGA237441",
-            "p7NGA237451",
-            "p8NGA237461",
-            // "sio06492.sp3",
+            // "emr08874.sp3", // TODO ? THH:MM:SS with omitted seconds..
+            // "sio06492.sp3", // TODO? THH:MM:SS with omitted seconds..
+            "NGA0OPSRAP_20251850000_01D_15M_ORB.SP3.gz",
+            "NGA0OPSRAP_20251860000_01D_15M_ORB.SP3.gz",
+            "NGA0OPSRAP_20251870000_01D_15M_ORB.SP3.gz",
+            "NGA0OPSRAP_20251880000_01D_15M_ORB.SP3.gz",
+            "NGA0OPSRAP_20251890000_01D_15M_ORB.SP3.gz",
+            "NGA0OPSRAP_20251900000_01D_15M_ORB.SP3.gz",
+            "NGA0OPSRAP_20251910000_01D_15M_ORB.SP3.gz",
+            "NGA0OPSRAP_20251920000_01D_15M_ORB.SP3.gz",
+            "NGA0OPSRAP_20251930000_01D_15M_ORB.SP3.gz",
         ] {
             let file_path = prefix.clone().join(file);
             println!("Parsing file \"{}\"", file_path.to_string_lossy());
 
-            let sp3 = SP3::from_file(&file_path).unwrap_or_else(|e| {
+            let sp3 = SP3::from_gzip_file(&file_path).unwrap_or_else(|e| {
                 panic!("failed to parse data/A/{}: {}", file, e);
             });
 
