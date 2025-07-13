@@ -9,7 +9,7 @@
  * Copyright (C) 2021-onward Christopher Rabotin <christopher.rabotin@gmail.com> et al. (cf. AUTHORS.md)
  * Documentation: https://nyxspace.com/
  */
-use log::error;
+use log::{debug, error};
 use thiserror::Error;
 
 use crate::prelude::{Duration, Epoch, SP3Entry, SP3Key, SP3, SV};
@@ -122,9 +122,9 @@ impl SP3 {
                 let sc_model = Spacecraft::builder().orbit(state.orbit).build();
 
                 Some(SpacecraftModel {
+                    model: sc_model,
                     maneuver: state.maneuver,
                     satellite: state.satellite,
-                    model: sc_model,
                 })
             } else {
                 None
@@ -174,6 +174,8 @@ impl SP3 {
         let iter = self
             .spacecraft_model_iter(initial_epoch, frame)
             .filter_map(move |spacecraft| {
+                debug!("spacecraft: {} {}", spacecraft.satellite, spacecraft.model);
+
                 let dynamics = dynamics.clone();
 
                 match Propagator::default(dynamics)
