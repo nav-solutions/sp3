@@ -1,11 +1,7 @@
-use crate::{
-    // constants::EARTH_GRAVITATION_MU_KM3_S2,
-    prelude::{Epoch, SP3, SV},
-};
+use crate::prelude::{Epoch, SP3, SV};
 
 use anise::{
     astro::AzElRange,
-    // constants::frames::EARTH_J2000,
     math::Vector6,
     prelude::{Almanac, Frame, Orbit},
 };
