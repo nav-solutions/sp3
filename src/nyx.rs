@@ -30,6 +30,7 @@ use std::sync::Arc;
 use hifitime::{TimeSeries, Unit};
 
 use nyx_space::{
+    cosmic::GuidanceMode,
     dynamics::{
         DynamicsError as NyxDynamicsError, OrbitalDynamics, SolarPressure, SpacecraftDynamics,
     },
@@ -119,7 +120,20 @@ impl SP3 {
     ) -> Box<dyn Iterator<Item = SpacecraftModel> + '_> {
         Box::new(self.satellites_orbit_iter(frame).filter_map(move |state| {
             if state.orbit.has_velocity_dynamics() && state.epoch == epoch {
-                let sc_model = Spacecraft::builder().orbit(state.orbit).build();
+                // Spacecraft model:
+                //  Dry mass: 1_500 kg
+                //  SRP   Cr: 1.3
+                //  SRP area: 25 (m^2)
+                // Drag   Cd: 2.2
+                // Drag area: 25  (m^2)
+                let sc_model = Spacecraft::builder()
+                    .orbit(state.orbit)
+                    .build()
+                    .with_dry_mass(1_500.0)
+                    .with_srp(25.0, 1.3)
+                    .with_drag(25.0, 2.2)
+                    .with_guidance_mode(GuidanceMode::Coast)
+                    .with_prop_mass(0.0);
 
                 Some(SpacecraftModel {
                     model: sc_model,
@@ -155,7 +169,6 @@ impl SP3 {
         duration: Duration,
     ) -> Result<Box<dyn Iterator<Item = SpacecraftTrajectory> + '_>, PredictionError> {
         let orbital_model = OrbitalDynamics::point_masses(vec![MOON, SUN]);
-
         let srp_model = SolarPressure::new(vec![EARTH_J2000], almanac.clone())?;
 
         let dynamics = SpacecraftDynamics::from_model(orbital_model, srp_model);
@@ -235,6 +248,8 @@ impl SP3 {
         initial_epoch: Option<Epoch>,
         duration: Duration,
     ) -> Result<(), PredictionError> {
+        let sampling_period = self.header.sampling_period;
+
         // Determine initial state
         let initial_epoch = match initial_epoch {
             Some(initial_epoch) => initial_epoch,
@@ -246,7 +261,7 @@ impl SP3 {
         let last_epoch = initial_epoch + duration;
 
         let new_epochs = ((last_epoch - initial_epoch).to_unit(Unit::Second)
-            / self.header.sampling_period.to_unit(Unit::Second))
+            / sampling_period.to_unit(Unit::Second))
         .round() as u64;
 
         // obtain a predicted trajectory for each satellite
@@ -254,14 +269,12 @@ impl SP3 {
             .trajectory_predictions_iter(almanac, frame, Some(initial_epoch), duration)?
             .collect::<Vec<_>>();
 
-        let interp_sampling_period = Duration::from_seconds(1.0);
-
         // iterate each trajectories and expand self
         for sat_trajectory in satellite_trajectories.iter() {
             let timeserie = if duration.is_negative() {
-                TimeSeries::inclusive(last_epoch, initial_epoch, interp_sampling_period)
+                TimeSeries::inclusive(last_epoch, initial_epoch, sampling_period)
             } else {
-                TimeSeries::inclusive(initial_epoch, last_epoch, interp_sampling_period)
+                TimeSeries::inclusive(initial_epoch, last_epoch, sampling_period)
             };
 
             for epoch in timeserie.into_iter() {
@@ -270,8 +283,8 @@ impl SP3 {
                         let pos_vel_km = state.orbit.to_cartesian_pos_vel();
 
                         let key = SP3Key {
-                            sv: sat_trajectory.satellite,
                             epoch,
+                            sv: sat_trajectory.satellite,
                         };
 
                         let value = SP3Entry::from_predicted_position_km((
@@ -314,6 +327,7 @@ mod test {
 
     use anise::{constants::frames::EARTH_J2000, prelude::Almanac};
 
+    use log::info;
     use std::str::FromStr;
     use std::sync::Arc;
 
@@ -361,6 +375,24 @@ mod test {
         residuals.to_file("od-residuals.sp3").unwrap_or_else(|e| {
             panic!("failed to dump OD residuals: {}", e);
         });
+
+        // Run testbench
+        for (k, v) in residuals.data.iter() {
+            let (x_err_m, y_err_m, z_err_m) = (
+                v.position_km.0.abs() * 1.0E3,
+                v.position_km.1.abs() * 1.0E3,
+                v.position_km.2.abs() * 1.0E3,
+            );
+
+            info!(
+                "{}({}) - x_err={:.3}m y_err={:.3}m z_err={:.3}m",
+                k.epoch, k.sv, x_err_m, y_err_m, z_err_m
+            );
+
+            // assert!(x_err_m < 5.0, "{}({}) - x_err={} too large", k.epoch, k.sv, x_err_m);
+            // assert!(y_err_m < 5.0, "{}({}) - y_err={} too large", k.epoch, k.sv, y_err_m);
+            // assert!(z_err_m < 5.0, "{}({}) - z_err={} too large", k.epoch, k.sv, z_err_m);
+        }
     }
 
     #[test]
