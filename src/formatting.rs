@@ -200,11 +200,11 @@ mod test {
         let sp3 =
             SP3::from_gzip_file("data/SP3/C/ESA0OPSULT_20232320600_02D_15M_ORB.SP3.gz").unwrap();
 
-        sp3.to_file("test-c.sp3").unwrap_or_else(|e| {
+        sp3.to_file("test-c-predicted.sp3").unwrap_or_else(|e| {
             panic!("SP3/formatting issue: {}", e);
         });
 
-        let _ = SP3::from_file("test-c.sp3").unwrap_or_else(|e| {
+        let _ = SP3::from_file("test-c-predicted.sp3").unwrap_or_else(|e| {
             panic!("SP3/failed to parse back: {}", e);
         });
 
