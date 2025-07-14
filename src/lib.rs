@@ -91,6 +91,12 @@ pub mod prelude {
     // Pub re-export
     pub use gnss::prelude::{Constellation, SV};
     pub use hifitime::{Duration, Epoch, TimeScale};
+
+    #[cfg(feature = "anise")]
+    pub use anise::{
+        constants::frames::{EARTH_J2000, IAU_EARTH_FRAME},
+        prelude::{Almanac, Frame},
+    };
 }
 
 /// SP3 dataset is a list of [SP3Entry] indexed by [SP3Key].
