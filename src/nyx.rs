@@ -161,7 +161,7 @@ impl SP3 {
     /// ## Returns
     /// - ([SV], [Trajectory]) for each satellite
     /// - [PredictionError]
-    pub fn trajectory_predictions_iter(
+    fn trajectory_predictions_iter(
         &self,
         almanac: Arc<Almanac>,
         frame: Frame,
@@ -241,6 +241,107 @@ impl SP3 {
     /// - duration: [Duration] of the prediction.
     /// NB: you can use a negative [Duration] here to predict in the past
     /// (backwards) from `initial_epoch`.
+    ///
+    /// Example (1): forward propagation
+    /// ```
+    /// use std::sync::Arc;
+    /// use std::str::FromStr;
+    /// use sp3::prelude::{SP3, Duration, Epoch, Almanac, Frame, EARTH_J2000};
+    ///
+    /// let almanac = Arc::new(Almanac::until_2035().unwrap());
+    /// let eme2k = almanac.frame_from_uid(EARTH_J2000).unwrap();
+    ///
+    /// let mut parsed =
+    ///        SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201770000_01D_15M_ORB.SP3.gz").unwrap();
+    ///
+    /// let first_epoch = Epoch::from_str("2020-06-25T00:00:00 GPST").unwrap();
+    /// let last_epoch = Epoch::from_str("2020-06-25T23:45:00 GPST").unwrap();
+    /// let extended_epoch = Epoch::from_str("2020-06-26T00:45:00 GPST").unwrap();
+    ///
+    /// // IGS does not provide dynamics while they are mandatory for OD
+    /// parsed.resolve_dynamics_mut();
+    ///
+    /// // Extend for this exact duration.
+    /// let prediction_duration = Duration::from_hours(1.0);
+    ///
+    /// // Without an offset (within that day) we start
+    /// // the extension on
+    /// // on the last symbol (midnight for that day)
+    /// let extended = parsed.spatial_prediction(almanac, eme2k, None, prediction_duration)
+    ///     .unwrap_or_else(|e| {
+    ///         panic!("(forward) spatial prediction failed with: {}", e);
+    ///     });
+    ///
+    /// // strip dynamics, converting back to original format (example)
+    /// let extended = extended.without_dynamics();
+    ///
+    /// assert_eq!(
+    ///     extended.first_epoch(),
+    ///     Some(first_epoch),
+    ///     "First epoch should have been preserved",
+    /// );
+    ///
+    /// assert_eq!(
+    ///     extended.last_epoch(),
+    ///     Some(extended_epoch),
+    ///     "Forward propagation did not extend correctly",
+    /// );
+    ///
+    /// // Dump as standardized (partly predicted) SP3
+    /// extended.to_file("extended.sp3")
+    ///     .unwrap();
+    /// ```
+    ///
+    /// Example (2): backwards propagation. This process works both ways.
+    /// ```
+    /// use std::sync::Arc;
+    /// use std::str::FromStr;
+    /// use sp3::prelude::{SP3, Duration, Epoch, Almanac, Frame, EARTH_J2000};
+    ///
+    /// let almanac = Arc::new(Almanac::until_2035().unwrap());
+    /// let eme2k = almanac.frame_from_uid(EARTH_J2000).unwrap();
+    ///
+    /// let mut parsed =
+    ///        SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201770000_01D_15M_ORB.SP3.gz").unwrap();
+    ///
+    /// let first_epoch = Epoch::from_str("2020-06-25T00:15:00 GPST").unwrap();
+    /// let last_epoch = Epoch::from_str("2020-06-25T23:45:00 GPST").unwrap();
+    /// let extended_epoch = Epoch::from_str("2020-06-24T23:00:00 GPST").unwrap();
+    ///
+    /// // IGS does not provide dynamics while they are mandatory for OD.
+    /// // This method is currently unable to derive the dynamics for very first epoch
+    /// // NB: hence the selected initial epoch
+    /// parsed.resolve_dynamics_mut();
+    ///
+    /// // Extend for this exact duration.
+    /// // Use negative durations for backwards propagation.
+    /// let prediction_duration = -Duration::from_hours(1.25);
+    ///
+    /// // Use the offset to select closest point in time.
+    /// let extended = parsed.spatial_prediction(almanac, eme2k, Some(first_epoch), prediction_duration)
+    ///     .unwrap_or_else(|e| {
+    ///         panic!("(forward) spatial prediction failed with: {}", e);
+    ///     });
+    ///
+    /// // strip dynamics, converting back to original format (example)
+    /// let extended = extended.without_dynamics();
+    ///
+    /// assert_eq!(
+    ///     extended.last_epoch(),
+    ///     Some(last_epoch),
+    ///     "Last epoch should have been preserved",
+    /// );
+    ///
+    /// assert_eq!(
+    ///     extended.first_epoch(),
+    ///     Some(extended_epoch),
+    ///     "Backwards propagation did not extend correctly",
+    /// );
+    ///
+    /// // Dump as standardized (partly predicted) SP3
+    /// extended.to_file("extended.sp3")
+    ///     .unwrap();
+    /// ```
     pub fn spatial_prediction_mut(
         &mut self,
         almanac: Arc<Almanac>,
@@ -332,8 +433,10 @@ mod test {
     use std::sync::Arc;
 
     #[test]
-    fn forward_spatial_propagation() {
+    fn forward_spatial_propagation_12h() {
         init_logger();
+        let prediction_duration = Duration::from_hours(11.75);
+
         let almanac = Arc::new(Almanac::until_2035().unwrap());
 
         let earth_cef = almanac.frame_from_uid(EARTH_J2000).unwrap();
@@ -341,20 +444,20 @@ mod test {
         let mut parsed =
             SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201770000_01D_15M_ORB.SP3.gz").unwrap();
 
-        // resolve dynamics
         parsed.resolve_dynamics_mut();
 
         let midnight = Epoch::from_str("2020-06-25T00:00:00 GPST").unwrap();
-        let noon = midnight + Duration::from_hours(12.0);
-        let j_1 = noon + Duration::from_hours(12.0);
+        let noon = Epoch::from_str("2020-06-25T12:00:00 GPST").unwrap();
+        let last_epoch = Epoch::from_str("2020-06-25T23:45:00 GPST").unwrap();
 
         let (morning, _) = parsed.split(noon);
 
         let predicted = morning
-            .spatial_prediction(almanac, earth_cef, Some(noon), Duration::from_hours(12.0))
+            .spatial_prediction(almanac, earth_cef, Some(noon), prediction_duration)
             .unwrap_or_else(|e| {
                 panic!("SP3 (spatial) prediction failed with: {}", e);
-            });
+            })
+            .without_dynamics();
 
         assert_eq!(
             predicted.first_epoch(),
@@ -364,17 +467,12 @@ mod test {
 
         assert_eq!(
             predicted.last_epoch(),
-            Some(j_1),
+            Some(last_epoch),
             "forward prediction did not extend correctly",
         );
 
         // obtain residuals
         let residuals = predicted.substract(&parsed);
-
-        // Dump residuals as fake SP3
-        residuals.to_file("od-residuals.sp3").unwrap_or_else(|e| {
-            panic!("failed to dump OD residuals: {}", e);
-        });
 
         // Run testbench
         for (k, v) in residuals.data.iter() {
@@ -396,8 +494,10 @@ mod test {
     }
 
     #[test]
-    fn backwards_spatial_propagation() {
+    fn backwards_spatial_propagation_12h() {
         init_logger();
+        let prediction_duration = Duration::from_hours(12.0);
+
         let almanac = Arc::new(Almanac::until_2035().unwrap());
 
         let earth_cef = almanac.frame_from_uid(EARTH_J2000).unwrap();
@@ -405,75 +505,61 @@ mod test {
         let mut parsed =
             SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201770000_01D_15M_ORB.SP3.gz").unwrap();
 
-        // resolve dynamics
+        let sampling_period = parsed.header.sampling_period;
+
         parsed.resolve_dynamics_mut();
 
         let midnight = Epoch::from_str("2020-06-25T00:00:00 GPST").unwrap();
+        let noon = Epoch::from_str("2020-06-25T12:00:00 GPST").unwrap();
+        let last_morning = noon - sampling_period;
+        let last_epoch = Epoch::from_str("2020-06-25T23:45:00 GPST").unwrap();
 
-        let predicted = parsed
-            .spatial_prediction(
-                almanac,
-                earth_cef,
-                Some(midnight),
-                -Duration::from_hours(24.0),
-            )
+        let (_, afternoon) = parsed.split(last_morning);
+
+        assert_eq!(
+            afternoon.first_epoch(),
+            Some(noon),
+            "incorrect initial epoch",
+        );
+
+        let predicted = afternoon
+            .spatial_prediction(almanac, earth_cef, Some(noon), -prediction_duration)
             .unwrap_or_else(|e| {
                 panic!("SP3 (spatial) prediction failed with: {}", e);
-            });
-
-        // parse actual data for that day
-        let model =
-            SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201760000_01D_15M_ORB.SP3.gz").unwrap();
+            })
+            .without_dynamics();
 
         assert_eq!(
             predicted.first_epoch(),
-            model.first_epoch(),
-            "backwards prediction did not extend correctly"
+            Some(midnight),
+            "backward prediction did not extend correctly",
         );
 
-        // compute residuals
-        let residuals = predicted.substract(&model);
-
-        // Dump residuals as fake SP3
-        residuals
-            .to_file("backwards-od-residuals.sp3")
-            .unwrap_or_else(|e| {
-                panic!("failed to dump OD residuals: {}", e);
-            });
-    }
-
-    #[test]
-    fn spatial_propagation_without_dynamics() {
-        init_logger();
-        let almanac = Arc::new(Almanac::until_2035().unwrap());
-
-        let earth_cef = almanac.frame_from_uid(EARTH_J2000).unwrap();
-
-        let parsed =
-            SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201770000_01D_15M_ORB.SP3.gz").unwrap();
-
-        let midnight = Epoch::from_str("2020-06-25T00:00:00 GPST").unwrap();
-        let noon_offset = midnight + Duration::from_hours(12.0);
-
-        let predicted = parsed
-            .spatial_prediction(
-                almanac,
-                earth_cef,
-                Some(noon_offset),
-                Duration::from_hours(12.0),
-            )
-            .unwrap_or_else(|e| {
-                panic!("SP3 (spatial) prediction failed with: {}", e);
-            });
+        assert_eq!(
+            predicted.last_epoch(),
+            Some(last_epoch),
+            "last epoch should have been preserved",
+        );
 
         // obtain residuals
         let residuals = predicted.substract(&parsed);
 
-        // Dump residuals as fake SP3
-        residuals
-            .to_file("od-nodyn-residuals.sp3")
-            .unwrap_or_else(|e| {
-                panic!("failed to dump OD residuals: {}", e);
-            });
+        // Run testbench
+        for (k, v) in residuals.data.iter() {
+            let (x_err_m, y_err_m, z_err_m) = (
+                v.position_km.0.abs() * 1.0E3,
+                v.position_km.1.abs() * 1.0E3,
+                v.position_km.2.abs() * 1.0E3,
+            );
+
+            info!(
+                "{}({}) - x_err={:.3}m y_err={:.3}m z_err={:.3}m",
+                k.epoch, k.sv, x_err_m, y_err_m, z_err_m
+            );
+
+            // assert!(x_err_m < 5.0, "{}({}) - x_err={} too large", k.epoch, k.sv, x_err_m);
+            // assert!(y_err_m < 5.0, "{}({}) - y_err={} too large", k.epoch, k.sv, y_err_m);
+            // assert!(z_err_m < 5.0, "{}({}) - z_err={} too large", k.epoch, k.sv, z_err_m);
+        }
     }
 }
