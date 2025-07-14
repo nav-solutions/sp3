@@ -41,8 +41,8 @@ anise = [
     "dep:anise",
 ]
 
-# Unlock Nyx propagators for SP3 prediction
-# This feature is released under AGPLv3.
+# Unlock Nyx propagators for SP3 prediction.
+# Modifies the license to AGPLv3.
 nyx-space = [
     "dep:log",
     "anise",
