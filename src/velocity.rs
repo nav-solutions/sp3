@@ -33,14 +33,17 @@ impl VelocityEntry {
             },
         };
 
-        let x = f64::from_str(line[4..18].trim())
-            .or(Err(ParsingError::Coordinates(line[4..18].to_string())))?;
+        let x_km = f64::from_str(line[4..18].trim())
+            .or(Err(ParsingError::Coordinates(line[4..18].to_string())))?
+            * 1.0E-4;
 
-        let y = f64::from_str(line[18..32].trim())
-            .or(Err(ParsingError::Coordinates(line[18..32].to_string())))?;
+        let y_km = f64::from_str(line[18..32].trim())
+            .or(Err(ParsingError::Coordinates(line[18..32].to_string())))?
+            * 1.0E-4;
 
-        let z = f64::from_str(line[32..46].trim())
-            .or(Err(ParsingError::Coordinates(line[32..46].to_string())))?;
+        let z_km = f64::from_str(line[32..46].trim())
+            .or(Err(ParsingError::Coordinates(line[32..46].to_string())))?
+            * 1.0E-4;
 
         if !line[45..52].trim().eq("999999.") {
             /*
@@ -48,11 +51,13 @@ impl VelocityEntry {
              */
             let clk_data = f64::from_str(line[46..60].trim())
                 .or(Err(ParsingError::Clock(line[46..60].to_string())))?;
+
             clock = Some(clk_data);
         }
+
         Ok(Self {
             sv,
-            velocity: (x, y, z),
+            velocity: (x_km, y_km, z_km),
             clock,
         })
     }

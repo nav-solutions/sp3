@@ -6,7 +6,7 @@
 /*
  * SP3 is part of the rtk-rs framework.
  * Authors: Guillaume W. Bres <guillaume.bressaix@gmail.com> et al.
- * (cf. https://github.com/rtk-rs/rinex/graphs/contributors)
+ * (cf. https://github.com/rtk-rs/sp3/graphs/contributors)
  * This framework is shipped under Mozilla Public V2 license.
  *
  * Documentation: https://github.com/rtk-rs/sp3
@@ -26,6 +26,10 @@ use production::Campaign;
 
 use std::collections::BTreeMap;
 
+#[cfg(feature = "anise")]
+#[cfg_attr(docsrs, doc(cfg(feature = "anise")))]
+mod anise;
+
 #[cfg(feature = "qc")]
 #[cfg_attr(docsrs, doc(cfg(feature = "qc")))]
 mod qc;
@@ -34,12 +38,9 @@ mod qc;
 #[cfg_attr(docsrs, doc(cfg(feature = "processing")))]
 mod processing;
 
-#[cfg(feature = "anise")]
-use anise::{
-    astro::AzElRange,
-    math::Vector6,
-    prelude::{Almanac, Frame, Orbit},
-};
+#[cfg(feature = "nyx-space")]
+#[cfg_attr(docsrs, doc(cfg(feature = "nyx-space")))]
+mod nyx;
 
 #[cfg(test)]
 mod tests;
@@ -56,6 +57,12 @@ mod velocity;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+
+#[cfg(feature = "anise")]
+pub use anise::{SatelliteOrbitalAttitude, SatelliteOrbitalState};
+
+#[cfg(feature = "nyx-space")]
+pub use nyx::{SpacecraftModel, SpacecraftTrajectory};
 
 use header::Header;
 use hifitime::Unit;
@@ -83,6 +90,12 @@ pub mod prelude {
     // Pub re-export
     pub use gnss::prelude::{Constellation, SV};
     pub use hifitime::{Duration, Epoch, TimeScale};
+
+    #[cfg(feature = "anise")]
+    pub use anise::{
+        constants::frames::{EARTH_J2000, IAU_EARTH_FRAME},
+        prelude::{Almanac, Frame},
+    };
 }
 
 /// SP3 dataset is a list of [SP3Entry] indexed by [SP3Key].
@@ -105,8 +118,8 @@ pub struct SP3 {
     /// File header comments, stored as is.
     pub comments: Vec<String>,
 
-    /// [ProductionAttributes] from file names that
-    /// follow the standard conventions
+    /// [ProductionAttributes] are resolved for files that
+    /// follow the standard naming conventions.
     pub prod_attributes: Option<ProductionAttributes>,
 
     /// File content are [SP3Entry]s sorted per [SP3Key]
@@ -403,58 +416,6 @@ impl SP3 {
                 }
             },
         ))
-    }
-
-    /// [SV] [Orbit]al state [Iterator] with theoretical 10⁻³m precision.
-    /// For this to be correct:
-    /// - [Frame] must be ECEF
-    /// - [Frame] should match the coordinates system described in [Header]
-    /// NB: all satellites being maneuvered are sorted out, which makes this method
-    /// compatible with navigation.
-    #[cfg(feature = "anise")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "anise")))]
-    pub fn satellites_orbit_iter(
-        &self,
-        frame_cef: Frame,
-    ) -> Box<dyn Iterator<Item = (Epoch, SV, Orbit)> + '_> {
-        Box::new(self.data.iter().filter_map(move |(k, v)| {
-            if !v.maneuver {
-                let (x_km, y_km, z_km) = v.position_km;
-                let (vx_km_s, vy_km_s, vz_km_s) = match v.velocity_km_s {
-                    Some((vx_km_s, vy_km_s, vz_km_s)) => (vx_km_s, vy_km_s, vz_km_s),
-                    None => (0.0, 0.0, 0.0),
-                };
-
-                let pos_vel = Vector6::new(x_km, y_km, z_km, vx_km_s, vy_km_s, vz_km_s);
-                let orbit = Orbit::from_cartesian_pos_vel(pos_vel, k.epoch, frame_cef);
-                Some((k.epoch, k.sv, orbit))
-            } else {
-                None
-            }
-        }))
-    }
-
-    /// [SV] (elevation, azimuth, range) attitude vector [Iterator], as [AzElRange].
-    #[cfg(feature = "anise")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "anise")))]
-    pub fn satellites_elevation_azimuth_iter(
-        &self,
-        almanac: Almanac,
-        frame_cef: Frame,
-        rx_orbit: Orbit,
-    ) -> Box<dyn Iterator<Item = (Epoch, SV, AzElRange)> + '_> {
-        Box::new(
-            self.satellites_orbit_iter(frame_cef)
-                .filter_map(move |(sv, t, tx_orbit)| {
-                    if let Ok(elazrng) =
-                        almanac.azimuth_elevation_range_sez(rx_orbit, tx_orbit, None, None)
-                    {
-                        Some((sv, t, elazrng))
-                    } else {
-                        None
-                    }
-                }),
-        )
     }
 
     /// Returns ([Epoch], [SV]) [Iterator] where satellite maneuver is being reported

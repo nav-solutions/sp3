@@ -116,6 +116,26 @@ impl SP3 {
         s.resolve_velocities_mut();
         s
     }
+
+    /// Strips (removes) velocities and possibly clock
+    /// drift as well, converting this to a [DataType::Position] file.
+    pub fn strip_dynamics_mut(&mut self) {
+        self.header.data_type = DataType::Position;
+
+        for (_, v) in self.data.iter_mut() {
+            v.velocity_km_s = None;
+            v.clock_drift_ns = None;
+        }
+    }
+
+    /// Copy and return a new [SP3] where dynamics (velocities
+    /// and possibly clock drifts) have been stripped and
+    /// converted to a [DataType::Position] file.
+    pub fn without_dynamics(&self) -> Self {
+        let mut s = self.clone();
+        s.strip_dynamics_mut();
+        s
+    }
 }
 
 #[cfg(test)]

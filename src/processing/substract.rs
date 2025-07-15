@@ -36,10 +36,56 @@ impl SP3 {
 
     /// Substract rhs [SP3] to Self, with mutable access. Refer to [Self::substract].
     pub fn substract_mut(&mut self, rhs: &Self) {
-        for (k, v) in self.data.iter_mut() {
+        self.data.retain(|k, v| {
             if let Some(v_rhs) = rhs.data.get(&k) {
                 *v -= *v_rhs;
+                true
+            } else {
+                false
             }
+        });
+    }
+}
+
+#[cfg(test)]
+#[cfg(feature = "flate2")]
+mod test {
+    use crate::prelude::SP3;
+
+    #[test]
+    fn substract_null_sp3() {
+        let parsed =
+            SP3::from_gzip_file("data/SP3/C/GRG0MGXFIN_20201770000_01D_15M_ORB.SP3.gz").unwrap();
+
+        let null_sp3 = parsed.substract(&parsed);
+
+        for (k, v) in null_sp3.data.iter() {
+            assert_eq!(
+                v.position_km,
+                (0.0, 0.0, 0.0),
+                "{}({}) - position is not null",
+                k.epoch,
+                k.sv
+            );
+            assert_eq!(
+                v.clock_us,
+                Some(0.0),
+                "{}({}) - clock offset is not null",
+                k.epoch,
+                k.sv
+            );
+            assert!(
+                v.velocity_km_s.is_none(),
+                "{}({}) - velocity should not exist",
+                k.epoch,
+                k.sv
+            );
+            assert!(
+                v.clock_drift_ns.is_none(),
+                "{}({}) - clock drift should not exist",
+                k.epoch,
+                k.sv
+            );
         }
     }
 }

@@ -86,19 +86,6 @@ impl SP3 {
         for epoch in self.data.keys().map(|k| k.epoch).unique().sorted() {
             let formatter = Formatter::new(epoch, efmt);
 
-            // let (y, m, d, hh, mm, ss, nanos) = epoch.to_gregorian_utc();
-
-            // writeln!(
-            //     writer,
-            //     "*  {:04} {:2} {:2} {:2} {:2} {:2}.{:08}",
-            //     y,
-            //     m,
-            //     d,
-            //     hh,
-            //     mm,
-            //     ss,
-            //     nanos / 10
-            // )?;
             writeln!(writer, "*  {}", formatter)?;
 
             for key in self
@@ -213,11 +200,11 @@ mod test {
         let sp3 =
             SP3::from_gzip_file("data/SP3/C/ESA0OPSULT_20232320600_02D_15M_ORB.SP3.gz").unwrap();
 
-        sp3.to_file("test-c.sp3").unwrap_or_else(|e| {
+        sp3.to_file("test-c-predicted.sp3").unwrap_or_else(|e| {
             panic!("SP3/formatting issue: {}", e);
         });
 
-        let _ = SP3::from_file("test-c.sp3").unwrap_or_else(|e| {
+        let _ = SP3::from_file("test-c-predicted.sp3").unwrap_or_else(|e| {
             panic!("SP3/failed to parse back: {}", e);
         });
 
