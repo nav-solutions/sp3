@@ -1,13 +1,13 @@
 # SP3
 
 [![crates.io](https://img.shields.io/crates/v/sp3.svg)](https://crates.io/crates/sp3)
-[![Rust](https://github.com/rtk-rs/sp3/actions/workflows/rust.yml/badge.svg)](https://github.com/rtk-rs/sp3/actions/workflows/rust.yml)
-[![Rust](https://github.com/rtk-rs/sp3/actions/workflows/daily.yml/badge.svg)](https://github.com/rtk-rs/sp3/actions/workflows/daily.yml)
+[![Rust](https://github.com/nav-solutions/sp3/actions/workflows/rust.yml/badge.svg)](https://github.com/nav-solutions/sp3/actions/workflows/rust.yml)
+[![Rust](https://github.com/nav-solutions/sp3/actions/workflows/daily.yml/badge.svg)](https://github.com/nav-solutions/sp3/actions/workflows/daily.yml)
 [![crates.io](https://docs.rs/sp3/badge.svg)](https://docs.rs/sp3/)
 [![crates.io](https://img.shields.io/crates/d/sp3.svg)](https://crates.io/crates/sp3)
 
 [![MRSV](https://img.shields.io/badge/MSRV-1.82.0-orange?style=for-the-badge)](https://github.com/rust-lang/rust/releases/tag/1.82.0)
-[![License](https://img.shields.io/badge/license-MPL_2.0-orange?style=for-the-badge&logo=mozilla)](https://github.com/rtk-rs/sp3/blob/main/LICENSE)
+[![License](https://img.shields.io/badge/license-MPL_2.0-orange?style=for-the-badge&logo=mozilla)](https://github.com/nav-solutions/sp3/blob/main/LICENSE)
 
 SP3 Precise GNSS Orbit file parsing, analysis & production. 
 

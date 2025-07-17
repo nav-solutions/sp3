@@ -1,11 +1,11 @@
 [package]
 name = "sp3"
-version = "1.3.0"
+version = "1.3.1"
 license = "MPL-2.0"
 authors = ["Guillaume W. Bres <guillaume.bressaix@gmail.com>"]
 description = "IGS SP3 file parser"
-homepage = "https://github.com/rtk-rs"
-repository = "https://github.com/rtk-rs/sp3"
+homepage = "https://github.com/nav-solutions"
+repository = "https://github.com/nav-solutions/sp3"
 documentation = "https://docs.rs/sp3/"
 keywords = ["gnss", "timing", "gps", "geo"]
 categories = ["science", "science::geo", "parsing"]
