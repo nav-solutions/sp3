@@ -9,11 +9,9 @@
 [![MRSV](https://img.shields.io/badge/MSRV-1.82.0-orange?style=for-the-badge)](https://github.com/rust-lang/rust/releases/tag/1.82.0)
 [![License](https://img.shields.io/badge/license-MPL_2.0-orange?style=for-the-badge&logo=mozilla)](https://github.com/nav-solutions/sp3/blob/main/LICENSE)
 
-SP3 Precise GNSS Orbit file parsing, analysis & production. 
+SP3 Precise GNSS Orbit file parsing, analysis & production.  
 
 This file format is specifid by the [International GNSS Service (IGS)](https://igs.org/products/#orbits_clocks).
-
-NB: this library only supports revisions C & D (latest).
 
 ## SP3 files content
 
