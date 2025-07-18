@@ -1,11 +1,11 @@
 [package]
 name = "sp3"
-version = "1.3.0"
+version = "1.3.1"
 license = "MPL-2.0"
 authors = ["Guillaume W. Bres <guillaume.bressaix@gmail.com>"]
 description = "IGS SP3 file parser"
-homepage = "https://github.com/rtk-rs"
-repository = "https://github.com/rtk-rs/sp3"
+homepage = "https://github.com/nav-solutions"
+repository = "https://github.com/nav-solutions/sp3"
 documentation = "https://docs.rs/sp3/"
 keywords = ["gnss", "timing", "gps", "geo"]
 categories = ["science", "science::geo", "parsing"]
@@ -54,8 +54,8 @@ thiserror = "2"
 itertools = "0.14"
 log = { version = "0.4", optional = true }
 anise = { version = "0.6", optional = true, features = ["embed_ephem"] }
-gnss-rs = { version = "2.4.0", features = ["serde"] }
-gnss-qc-traits = { version = "0.3.1", optional = true }
+gnss-rs = { version = "2.4", features = ["serde"] }
+gnss-qc-traits = { version = "0.3.2", optional = true }
 hifitime = { version = "4.1", features = ["serde", "std"] }
 nyx-space = { git = "https://github.com/nyx-space/nyx", rev = "a0a4638a8b53302f832791c0d7a26bc64e3166ea", optional = true }
 

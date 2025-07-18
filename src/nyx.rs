@@ -1,9 +1,9 @@
 /*
  * Authors: Guillaume W. Bres <guillaume.bressaix@gmail.com> et al.
- * (cf. https://github.com/rtk-rs/sp3/graphs/contributors)
+ * (cf. https://github.com/nav-solutions/sp3/graphs/contributors)
  * This framework is shipped under Mozilla Public V2 license.
  *
- * Documentation: https://github.com/rtk-rs/sp3
+ * Documentation: https://github.com/nav-solutions/sp3
  *
  * The Nyx feature is released under AGPLv3
  * Copyright (C) 2021-onward Christopher Rabotin <christopher.rabotin@gmail.com> et al. (cf. AUTHORS.md)
