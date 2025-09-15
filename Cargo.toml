@@ -55,7 +55,7 @@ itertools = "0.14"
 log = { version = "0.4", optional = true }
 anise = { version = "0.6", optional = true, features = ["embed_ephem"] }
 gnss-rs = { version = "2.4", features = ["serde"] }
-gnss-qc-traits = { version = "0.3.2", optional = true }
+gnss-qc-traits = { version = "0.4.0", optional = true }
 hifitime = { version = "4.1", features = ["serde", "std"] }
 nyx-space = { git = "https://github.com/nyx-space/nyx", rev = "a0a4638a8b53302f832791c0d7a26bc64e3166ea", optional = true }
 
