@@ -117,8 +117,9 @@ This library comes with a few features
 
 - `flate2` will enable direct support of Gzip compressed SP3 files
 - `serde` will unlock internal structure serdes ops
-- `anise` feature will unlock Elevation and Azimuth attitudes (heaviest dependency).
-- `qc` option will unlock basic file management options like Merge(A, B) or Split (timewise)
+- `anise` unlocks ANISE bridge, elevation, azimuth and orbital features (heavy)
+- `nyx` unlocks spatial prediction features (heavy++)
+- `qc` unlocks basic file management options like Merge(A, B) or Split (timewise)
 - `processing` relies on `qc` and unlocks file preprocessing, like resampling and data masking
 - interpolation methods are proposed by default (they do not involve other dependencies)
 
