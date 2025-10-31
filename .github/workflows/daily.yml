@@ -30,6 +30,9 @@ jobs:
 
     - uses: actions-rs/toolchain@v1
       name: Install Rust
+      with:
+        toolchain: 1.89.0
+        override: true
     
     - name: ${{ matrix.name }} 
       run: |
@@ -46,6 +49,9 @@ jobs:
 
     - uses: actions-rs/toolchain@v1
       name: Install Rust
+      with:
+        toolchain: 1.89.0
+        override: true
     
     - uses: actions-rs/cargo@v1
       name: Test (all features)
