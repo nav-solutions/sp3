@@ -63,6 +63,8 @@ git = "https://github.com/nav-solutions/gnss"
 rev = "f302f0392e9acf3e99f180d469454f83923ab70b"
 features = ["serde"]
 
+[dependencies.gnss-qc-traits]
+
 [dependencies]
 thiserror = "2"
 itertools = "0.14"
