@@ -35,15 +35,16 @@ jobs:
 
     - name: Build
       run: cargo build
-
     - name: Build
       run: cargo build --all-features
-    
-    - name: Build (Python bindings)
+    - name: Build (Python)
       run: cargo build --features python
-
     - name: Run tests
       run: cargo test --all-features
-
+    - name: Python tests
+      run: |
+        cargo install maturin
+        pip install pytest
+        maturin develop && pytest
     - name: Documentation
       run: cargo doc --all-features
