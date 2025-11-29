@@ -53,15 +53,15 @@ nyx-space = [
 thiserror = "2"
 itertools = "0.14"
 log = { version = "0.4", optional = true }
-anise = { version = "0.5.3", optional = true }
+anise = { version = "0.8", optional = true }
 gnss-rs = { version = "2.4", features = ["serde"] }
 gnss-qc-traits = { version = "0.4.0", optional = true }
 hifitime = { version = "4.1", features = ["serde", "std"] }
-nyx-space = { version = "2.1", optional = true }
+nyx-space = { git = "https://github.com/nyx-space/nyx", rev = "57c6d75345553182a731df4c2f2ecb32a5815cdb", optional = true }
 
 flate2 = { version = "1", optional = true, default-features = false, features = ["zlib"] }
 serde = { version = "1.0", optional = true, default-features = false, features = ["derive"] }
 
 [dev-dependencies]
 env_logger = "0.11"
-anise = { version = "0.5.3", features = ["embed_ephem"] }
+anise = { version = "0.8", features = ["embed_ephem"] }
