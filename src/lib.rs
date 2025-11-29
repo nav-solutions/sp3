@@ -69,13 +69,13 @@ pub use anise::{SatelliteOrbitalAttitude, SatelliteOrbitalState};
 #[cfg(feature = "nyx-space")]
 pub use nyx::{SpacecraftModel, SpacecraftTrajectory};
 
+type Vector3D = (f64, f64, f64);
+
 use header::Header;
 use hifitime::Unit;
 
 use entry::SP3Entry;
 use errors::*;
-
-type Vector3D = (f64, f64, f64);
 
 pub mod prelude {
     pub use crate::{

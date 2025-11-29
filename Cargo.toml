@@ -60,17 +60,19 @@ python = [
 
 [dependencies.gnss-rs]
 git = "https://github.com/nav-solutions/gnss"
-rev = "f302f0392e9acf3e99f180d469454f83923ab70b"
+rev = "af691cfe4c22b4b9c952a899f6df3c77453c9c34"
 features = ["serde"]
 
 [dependencies.gnss-qc-traits]
+git = "https://github.com/nav-solutions/qc-traits"
+rev = "3ca98d3766bb9a468994be469abeade4a920e2d1"
+optional = true
 
 [dependencies]
 thiserror = "2"
 itertools = "0.14"
 log = { version = "0.4", optional = true }
 anise = { version = "0.8", optional = true }
-gnss-qc-traits = { version = "0.4", optional = true }
 hifitime = { version = "4", features = ["serde", "std"] }
 pyo3 = { version = "0.27", features = ["extension-module"], optional = true }
 nyx-space = { git = "https://github.com/nyx-space/nyx", rev = "57c6d75345553182a731df4c2f2ecb32a5815cdb", optional = true }
