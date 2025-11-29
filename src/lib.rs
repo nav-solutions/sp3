@@ -57,6 +57,9 @@ mod position;
 mod production;
 mod velocity;
 
+#[cfg(feature = "python")]
+use pyo3::prelude::pyclass;
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -102,6 +105,8 @@ pub mod prelude {
 
 /// SP3 dataset is a list of [SP3Entry] indexed by [SP3Key].
 #[derive(Debug, Clone, PartialEq, PartialOrd, Hash, Eq, Ord)]
+#[cfg_attr(feature = "python", pyclass)]
+#[cfg_attr(feature = "python", pyo3(module = "gnss"))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SP3Key {
     /// Spacecraft described as [SV]

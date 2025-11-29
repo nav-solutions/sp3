@@ -51,19 +51,26 @@ nyx-space = [
 
 # Unlock python bindings
 python = [
+    "dep:pyo3",
     "gnss-rs/python",
+    "gnss-rs/std",
     "anise/python",
     "hifitime/python",
 ]
+
+[dependencies.gnss-rs]
+git = "https://github.com/nav-solutions/gnss"
+rev = "f302f0392e9acf3e99f180d469454f83923ab70b"
+features = ["serde"]
 
 [dependencies]
 thiserror = "2"
 itertools = "0.14"
 log = { version = "0.4", optional = true }
 anise = { version = "0.8", optional = true }
-gnss-rs = { version = "2.5", features = ["serde"] }
 gnss-qc-traits = { version = "0.4", optional = true }
 hifitime = { version = "4", features = ["serde", "std"] }
+pyo3 = { version = "0.27", features = ["extension-module"], optional = true }
 nyx-space = { git = "https://github.com/nyx-space/nyx", rev = "57c6d75345553182a731df4c2f2ecb32a5815cdb", optional = true }
 
 flate2 = { version = "1", optional = true, default-features = false, features = ["zlib"] }
