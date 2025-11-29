@@ -21,6 +21,8 @@ jobs:
             opts: -r
           - name: All Features
             opts: --all-features
+          - name: Python bindings
+            opts: --features python
 
     steps:
     - uses: actions/checkout@v3

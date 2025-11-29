@@ -3,6 +3,9 @@ use crate::prelude::SP3Key;
 
 use crate::{formatting::CoordsFormatter, prelude::SV, FormattingError, Vector3D};
 
+#[cfg(feature = "python")]
+use pyo3::prelude::*;
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -10,6 +13,8 @@ use std::io::{BufWriter, Write};
 
 /// SP3 record content are [SP3Entry] indexed by [SP3Key].
 #[derive(Debug, Copy, PartialEq, Clone)]
+#[cfg_attr(feature = "python", pyclass)]
+#[cfg_attr(feature = "python", pyo3(module = "sp3"))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SP3Entry {
     /// ECEF position in kilometers with 10⁻³ precision.

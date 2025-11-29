@@ -5,6 +5,7 @@
 [![Rust](https://github.com/nav-solutions/sp3/actions/workflows/daily.yml/badge.svg)](https://github.com/nav-solutions/sp3/actions/workflows/daily.yml)
 [![crates.io](https://docs.rs/sp3/badge.svg)](https://docs.rs/sp3/)
 [![crates.io](https://img.shields.io/crates/d/sp3.svg)](https://crates.io/crates/sp3)
+[![discord server](https://img.shields.io/discord/1342922474110586910?logo=discord)](https://discord.gg/EqhEBXBmJh)
 
 [![MRSV](https://img.shields.io/badge/MSRV-1.82.0-orange?style=for-the-badge)](https://github.com/rust-lang/rust/releases/tag/1.82.0)
 [![License](https://img.shields.io/badge/license-MPL_2.0-orange?style=for-the-badge&logo=mozilla)](https://github.com/nav-solutions/sp3/blob/main/LICENSE)
@@ -20,6 +21,21 @@ which is compatible with high precision geodesy.
 
 Sometimes SP3 files may provide velocity vectors, satellite clock offsets
 or satellite clock drifts as well.
+
+## Features
+
+- `flate2` enables direct support of Gzip compressed SP3 files
+- `serde` unlocks internal serdes ops
+- `anise` unlocks ANISE bridge for navigation attitude determination
+- `nyx` unlocks spatial prediction (heavy++)
+- `python` unlocks python bindings
+- `qc` unlocks basic file management options like Merge(A, B) or Split (timewise)
+- `processing` relies on `qc` and unlocks file preprocessing, like resampling and data masking
+- interpolation methods are proposed by default (they do not involve other dependencies)
+
+## Default features
+
+This library is shipped with `flate2` support (gzip compressed SP3 files) by default.
 
 ## Getting started
 
@@ -110,22 +126,6 @@ assert_eq!(attributes.release_period, ReleasePeriod::Daily);
 assert_eq!(attributes.sampling_period, sp3.header.sampling_period);
 assert!(attributes.gzip_compressed);
 ```
-
-## Lib features
-
-This library comes with a few features
-
-- `flate2` will enable direct support of Gzip compressed SP3 files
-- `serde` will unlock internal structure serdes ops
-- `anise` unlocks ANISE bridge, elevation, azimuth and orbital features (heavy)
-- `nyx` unlocks spatial prediction features (heavy++)
-- `qc` unlocks basic file management options like Merge(A, B) or Split (timewise)
-- `processing` relies on `qc` and unlocks file preprocessing, like resampling and data masking
-- interpolation methods are proposed by default (they do not involve other dependencies)
-
-## Default features
-
-This library is shipped with `flate2` support (gzip compressed SP3 files) by default.
 
 ## Main dependencies
 
@@ -257,6 +257,20 @@ let gpst_sp3 = SP3::from_gzip_file(&path)
 // Dump as GST file
 // gst_sp3.to_file("/tmp/gst.txt")
 //    .unwrap();
+```
+
+## Python bindings
+
+Build & install with maturin
+
+```bash
+maturin develop # local install
+```
+
+Getting started:
+
+```python
+# TODO
 ```
 
 ## License
