@@ -258,6 +258,20 @@ let gpst_sp3 = SP3::from_gzip_file(&path)
 //    .unwrap();
 ```
 
+## Python bindings
+
+Build & install with maturin
+
+```bash
+maturin develop # local install
+```
+
+Getting started:
+
+```python
+# TODO
+```
+
 ## License
 
 The SP3 library is released under the [Mozilla V2 Public](https://www.mozilla.org/en-US/MPL/2.0) license.  
