@@ -53,7 +53,7 @@ nyx-space = [
 python = [
     "dep:pyo3",
     "gnss-rs/python",
-    "anise/python",
+    "anise-py",
     "hifitime/python",
 ]
 
