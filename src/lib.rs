@@ -57,6 +57,9 @@ mod position;
 mod production;
 mod velocity;
 
+#[cfg(feature = "python")]
+use pyo3::prelude::pyclass;
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -66,13 +69,13 @@ pub use anise::{SatelliteOrbitalAttitude, SatelliteOrbitalState};
 #[cfg(feature = "nyx-space")]
 pub use nyx::{SpacecraftModel, SpacecraftTrajectory};
 
+type Vector3D = (f64, f64, f64);
+
 use header::Header;
 use hifitime::Unit;
 
 use entry::SP3Entry;
 use errors::*;
-
-type Vector3D = (f64, f64, f64);
 
 pub mod prelude {
     pub use crate::{
@@ -102,6 +105,8 @@ pub mod prelude {
 
 /// SP3 dataset is a list of [SP3Entry] indexed by [SP3Key].
 #[derive(Debug, Clone, PartialEq, PartialOrd, Hash, Eq, Ord)]
+#[cfg_attr(feature = "python", pyclass)]
+#[cfg_attr(feature = "python", pyo3(module = "sp3"))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SP3Key {
     /// Spacecraft described as [SV]
@@ -112,6 +117,8 @@ pub struct SP3Key {
 }
 
 #[derive(Default, Clone, PartialEq, Debug)]
+#[cfg_attr(feature = "python", pyclass)]
+#[cfg_attr(feature = "python", pyo3(module = "sp3"))]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SP3 {
     /// File [Header]
