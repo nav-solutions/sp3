@@ -11,15 +11,15 @@ use flate2::read::GzDecoder;
 
 use crate::{
     header::{
-        line1::{Line1, is_header_line1},
-        line2::{Line2, is_header_line2},
+        line1::{is_header_line1, Line1},
+        line2::{is_header_line2, Line2},
     },
-    position::{PositionEntry, position_entry},
+    position::{position_entry, PositionEntry},
     prelude::{
-        Constellation, Epoch, Error, Header, ParsingError, ProductionAttributes, SP3, SP3Entry,
-        SP3Key, SV, TimeScale, Version,
+        Constellation, Epoch, Error, Header, ParsingError, ProductionAttributes, SP3Entry, SP3Key,
+        TimeScale, Version, SP3, SV,
     },
-    velocity::{VelocityEntry, velocity_entry},
+    velocity::{velocity_entry, VelocityEntry},
 };
 
 fn file_descriptor(content: &str) -> bool {

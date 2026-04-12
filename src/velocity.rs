@@ -1,7 +1,7 @@
 //! Velocity entry parsing
 use crate::{
     errors::ParsingError,
-    prelude::{Constellation, SV, Version},
+    prelude::{Constellation, Version, SV},
 };
 
 use std::str::FromStr;

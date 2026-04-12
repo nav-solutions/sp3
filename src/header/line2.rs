@@ -1,7 +1,7 @@
 //! header line #2 helpers
 use std::io::{BufWriter, Write};
 
-use crate::{FormattingError, ParsingError, formatting::CoordsFormatter, prelude::Duration};
+use crate::{formatting::CoordsFormatter, prelude::Duration, FormattingError, ParsingError};
 
 pub(crate) fn is_header_line2(content: &str) -> bool {
     content.starts_with("##")

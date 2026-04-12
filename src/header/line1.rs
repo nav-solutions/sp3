@@ -1,9 +1,9 @@
 //! Header line #1 helpers
 
 use crate::{
-    FormattingError, ParsingError,
     header::{DataType, OrbitType, Version},
     prelude::Epoch,
+    FormattingError, ParsingError,
 };
 
 use std::io::{BufWriter, Write};
@@ -98,7 +98,7 @@ impl Line1 {
 #[cfg(test)]
 mod test {
     use crate::{
-        header::{DataType, OrbitType, Version, line1::Line1},
+        header::{line1::Line1, DataType, OrbitType, Version},
         prelude::Epoch,
         tests::formatting::Utf8Buffer,
     };

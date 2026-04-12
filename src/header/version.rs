@@ -88,7 +88,11 @@ impl std::ops::Sub<u8> for Version {
         let mut s = s as i8;
         s -= rhs as i8;
 
-        if s <= 0 { Self::A } else { (s as u8).into() }
+        if s <= 0 {
+            Self::A
+        } else {
+            (s as u8).into()
+        }
     }
 }
 

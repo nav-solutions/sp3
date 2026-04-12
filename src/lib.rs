@@ -76,11 +76,11 @@ type Vector3D = (f64, f64, f64);
 
 pub mod prelude {
     pub use crate::{
-        SP3, SP3Key,
         entry::SP3Entry,
         errors::{Error, FormattingError, ParsingError},
-        header::{DataType, Header, OrbitType, version::Version},
+        header::{version::Version, DataType, Header, OrbitType},
         production::{Availability, ProductionAttributes, ReleaseDate, ReleasePeriod},
+        SP3Key, SP3,
     };
 
     #[cfg(feature = "qc")]

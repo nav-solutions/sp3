@@ -12,7 +12,7 @@
 use log::{debug, error};
 use thiserror::Error;
 
-use crate::prelude::{Duration, Epoch, SP3, SP3Entry, SP3Key, SV};
+use crate::prelude::{Duration, Epoch, SP3Entry, SP3Key, SP3, SV};
 
 #[cfg(doc)]
 use crate::prelude::DataType;
@@ -30,13 +30,13 @@ use std::sync::Arc;
 use hifitime::{TimeSeries, Unit};
 
 use nyx_space::{
-    Spacecraft,
     cosmic::GuidanceMode,
     dynamics::{
         DynamicsError as NyxDynamicsError, OrbitalDynamics, SolarPressure, SpacecraftDynamics,
     },
     md::trajectory::Traj,
     propagators::Propagator,
+    Spacecraft,
 };
 
 /// [SP3] prediction specific errors.
@@ -422,7 +422,7 @@ impl SP3 {
 #[cfg(test)]
 mod test {
     use crate::{
-        prelude::{Duration, Epoch, SP3, Split},
+        prelude::{Duration, Epoch, Split, SP3},
         tests::init_logger,
     };
 

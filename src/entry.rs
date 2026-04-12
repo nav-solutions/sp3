@@ -1,7 +1,7 @@
 #[cfg(doc)]
 use crate::prelude::SP3Key;
 
-use crate::{FormattingError, Vector3D, formatting::CoordsFormatter, prelude::SV};
+use crate::{formatting::CoordsFormatter, prelude::SV, FormattingError, Vector3D};
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};

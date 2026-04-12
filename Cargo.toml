@@ -9,7 +9,7 @@ repository = "https://github.com/nav-solutions/sp3"
 documentation = "https://docs.rs/sp3/"
 keywords = ["gnss", "timing", "gps", "geo"]
 categories = ["science", "science::geo", "parsing"]
-edition = "2024"
+edition = "2021"
 readme = "README.md"
 exclude = [
     "data/*",
