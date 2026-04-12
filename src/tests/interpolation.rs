@@ -74,51 +74,59 @@ mod test {
         let tn_min_1s = tn - 1.0 * Unit::Second;
 
         // test: invalid SV
-        assert!(sp3
-            .satellite_position_lagrangian_interpolation(g72, t0, 7)
-            .is_none());
+        assert!(
+            sp3.satellite_position_lagrangian_interpolation(g72, t0, 7)
+                .is_none()
+        );
 
-        assert!(sp3
-            .satellite_position_lagrangian_interpolation(g72, t1, 7)
-            .is_none());
+        assert!(
+            sp3.satellite_position_lagrangian_interpolation(g72, t1, 7)
+                .is_none()
+        );
 
-        assert!(sp3
-            .satellite_position_lagrangian_interpolation(g72, t2, 7)
-            .is_none());
+        assert!(
+            sp3.satellite_position_lagrangian_interpolation(g72, t2, 7)
+                .is_none()
+        );
 
         // test: too early (x3)
         for t in [t0_min_1s, t0_min_5min, t0, t0_5min, t0_14min_59s] {
-            assert!(sp3
-                .satellite_position_lagrangian_interpolation(g01, t, 3)
-                .is_none());
+            assert!(
+                sp3.satellite_position_lagrangian_interpolation(g01, t, 3)
+                    .is_none()
+            );
         }
 
         // test: first x3 feasible
         for t in [t1_1s, t1_5min, t1_14min_59s, t2] {
-            assert!(sp3
-                .satellite_position_lagrangian_interpolation(g01, t, 3)
-                .is_some());
+            assert!(
+                sp3.satellite_position_lagrangian_interpolation(g01, t, 3)
+                    .is_some()
+            );
         }
 
         // test: second x3 feasible
         for t in [t2_1s, t2_7min, t2_14min_59s] {
-            assert!(sp3
-                .satellite_position_lagrangian_interpolation(g01, t, 3)
-                .is_some());
+            assert!(
+                sp3.satellite_position_lagrangian_interpolation(g01, t, 3)
+                    .is_some()
+            );
         }
 
         // test: last feasible (x3)
         for t in [tn1, tn1_min_1s] {
-            assert!(sp3
-                .satellite_position_lagrangian_interpolation(g01, t, 3)
-                .is_some());
+            assert!(
+                sp3.satellite_position_lagrangian_interpolation(g01, t, 3)
+                    .is_some()
+            );
         }
 
         // test: too late (x3)
         for t in [tn, tn_min_1s] {
-            assert!(sp3
-                .satellite_position_lagrangian_interpolation(g01, t, 3)
-                .is_none());
+            assert!(
+                sp3.satellite_position_lagrangian_interpolation(g01, t, 3)
+                    .is_none()
+            );
         }
 
         // test: too early x7
@@ -136,30 +144,34 @@ mod test {
             t2_14min_59s,
             t3,
         ] {
-            assert!(sp3
-                .satellite_position_lagrangian_interpolation(g01, t, 7)
-                .is_none());
+            assert!(
+                sp3.satellite_position_lagrangian_interpolation(g01, t, 7)
+                    .is_none()
+            );
         }
 
         // test: first feasible x7
         for t in [t3_1s, t3_1min, t3_14min_59s] {
-            assert!(sp3
-                .satellite_position_lagrangian_interpolation(g01, t, 7)
-                .is_some());
+            assert!(
+                sp3.satellite_position_lagrangian_interpolation(g01, t, 7)
+                    .is_some()
+            );
         }
 
         // test: too late (x7)
         for t in [tn, tn_min_1s, tn1, tn2] {
-            assert!(sp3
-                .satellite_position_lagrangian_interpolation(g01, t, 7)
-                .is_none());
+            assert!(
+                sp3.satellite_position_lagrangian_interpolation(g01, t, 7)
+                    .is_none()
+            );
         }
 
         // test: last feasible (x7)
         for t in [tn3, tn3_min_1s, tn3_min_7min, tn4] {
-            assert!(sp3
-                .satellite_position_lagrangian_interpolation(g01, t, 7)
-                .is_some());
+            assert!(
+                sp3.satellite_position_lagrangian_interpolation(g01, t, 7)
+                    .is_some()
+            );
         }
     }
 }

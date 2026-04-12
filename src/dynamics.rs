@@ -1,6 +1,6 @@
 use crate::{
-    prelude::{DataType, Epoch, SP3Entry, SP3, SV},
     Vector3D,
+    prelude::{DataType, Epoch, SP3, SP3Entry, SV},
 };
 
 use std::collections::HashMap;

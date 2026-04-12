@@ -9,7 +9,7 @@ pub mod version;
 use crate::{
     errors::FormattingError,
     header::version::Version,
-    prelude::{Constellation, Duration, Epoch, ParsingError, TimeScale, SV},
+    prelude::{Constellation, Duration, Epoch, ParsingError, SV, TimeScale},
 };
 
 #[cfg(feature = "serde")]
@@ -224,7 +224,7 @@ impl Header {
 #[cfg(test)]
 mod test {
     use crate::prelude::{
-        Constellation, DataType, Duration, Epoch, Header, OrbitType, TimeScale, Version, SV,
+        Constellation, DataType, Duration, Epoch, Header, OrbitType, SV, TimeScale, Version,
     };
     use crate::tests::formatting::Utf8Buffer;
 

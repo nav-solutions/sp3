@@ -10,7 +10,7 @@ use itertools::Itertools;
 use crate::{errors::FormattingError, prelude::SP3};
 
 #[cfg(feature = "flate2")]
-use flate2::{write::GzEncoder, Compression as GzCompression};
+use flate2::{Compression as GzCompression, write::GzEncoder};
 
 use hifitime::efmt::{Format, Formatter};
 
@@ -44,11 +44,7 @@ impl std::fmt::Display for CoordsFormatter {
         let sign_str = if self.precision == 13 {
             ""
         } else {
-            if value.is_sign_positive() {
-                " "
-            } else {
-                ""
-            }
+            if value.is_sign_positive() { " " } else { "" }
         };
 
         let formatted = if value.is_sign_positive() {

@@ -1,7 +1,7 @@
 //! Position & Clock data parsing
 use crate::{
     errors::ParsingError,
-    prelude::{Constellation, Version, SV},
+    prelude::{Constellation, SV, Version},
 };
 
 use std::str::FromStr;
@@ -95,7 +95,7 @@ impl PositionEntry {
 #[cfg(test)]
 mod test {
     use super::PositionEntry;
-    use crate::prelude::{Version, SV};
+    use crate::prelude::{SV, Version};
     use std::str::FromStr;
 
     #[test]

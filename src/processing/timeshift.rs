@@ -1,4 +1,4 @@
-use crate::prelude::{Epoch, SP3Entry, SP3Key, TimeScale, SP3};
+use crate::prelude::{Epoch, SP3, SP3Entry, SP3Key, TimeScale};
 use qc_traits::{TimeCorrectionError, TimeCorrectionsDB, Timeshift};
 
 use std::collections::BTreeMap;
@@ -127,7 +127,7 @@ impl Timeshift for SP3 {
 
 #[cfg(test)]
 mod test {
-    use crate::prelude::{Duration, Epoch, TimeScale, SP3};
+    use crate::prelude::{Duration, Epoch, SP3, TimeScale};
     use hifitime::Polynomial;
     use qc_traits::{TimeCorrection, TimeCorrectionsDB, Timeshift};
     use std::str::FromStr;

@@ -1,4 +1,4 @@
-use crate::{prelude::Duration, ParsingError};
+use crate::{ParsingError, prelude::Duration};
 
 #[cfg(doc)]
 use crate::prelude::SP3;
