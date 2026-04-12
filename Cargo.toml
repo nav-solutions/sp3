@@ -1,6 +1,6 @@
 [package]
 name = "sp3"
-version = "1.4.1"
+version = "1.5.0"
 license = "MPL-2.0"
 authors = ["Guillaume W. Bres <guillaume.bressaix@gmail.com>"]
 description = "IGS SP3 file parser"
@@ -16,7 +16,7 @@ exclude = [
 ]
 
 [package.metadata]
-msrv = "1.82"
+msrv = "1.89"
 
 [package.metadata.docs.rs]
 all-features = true
@@ -51,12 +51,12 @@ nyx-space = [
 
 [dependencies.gnss-rs]
 git = "https://github.com/nav-solutions/gnss"
-rev = "83b2b9397d05a59a9d06b0ddf1fab73c7f1ab1c1"
+rev = "9b9c18f60cf60045c4b702a411377469f9962e62"
 features = ["serde"]
 
 [dependencies.gnss-qc-traits]
 git = "https://github.com/nav-solutions/qc-traits"
-rev = "3fddd9f447629e691538ed903790e9aeb09f92ef"
+rev = "146b737342c2d4efe377ef4804fc0f5ab9b15d97"
 optional = true
 
 [dependencies]

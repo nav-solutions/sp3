@@ -450,18 +450,18 @@ mod test {
 
         {
             let (data, expected) = (
-            SP3Entry {
-                position_km: (-11044.805800, -10475.672350, 21929.418200),
-                velocity_km_s: None,
-                predicted_orbit: true,
-                maneuver: false,
-                clock_drift_ns: None,
-                clock_event: false,
-                predicted_clock: false,
-                clock_us: None,
-            },
-            "PG01 -11044.805800 -10475.672350  21929.418200                                 P\n",
-        );
+                SP3Entry {
+                    position_km: (-11044.805800, -10475.672350, 21929.418200),
+                    velocity_km_s: None,
+                    predicted_orbit: true,
+                    maneuver: false,
+                    clock_drift_ns: None,
+                    clock_event: false,
+                    predicted_clock: false,
+                    clock_us: None,
+                },
+                "PG01 -11044.805800 -10475.672350  21929.418200                                 P\n",
+            );
             let mut buf = BufWriter::new(Utf8Buffer::new(1024));
 
             data.format(g01, &mut buf).unwrap_or_else(|e| {
@@ -481,18 +481,18 @@ mod test {
 
         {
             let (data, expected) = (
-            SP3Entry {
-                position_km: (-11044.805800, -10475.672350, 21929.418200),
-                velocity_km_s: None,
-                predicted_orbit: true,
-                maneuver: false,
-                clock_drift_ns: None,
-                clock_event: false,
-                predicted_clock: true,
-                clock_us: None,
-            },
-            "PG01 -11044.805800 -10475.672350  21929.418200                             P   P\n",
-        );
+                SP3Entry {
+                    position_km: (-11044.805800, -10475.672350, 21929.418200),
+                    velocity_km_s: None,
+                    predicted_orbit: true,
+                    maneuver: false,
+                    clock_drift_ns: None,
+                    clock_event: false,
+                    predicted_clock: true,
+                    clock_us: None,
+                },
+                "PG01 -11044.805800 -10475.672350  21929.418200                             P   P\n",
+            );
             let mut buf = BufWriter::new(Utf8Buffer::new(1024));
 
             data.format(g01, &mut buf).unwrap_or_else(|e| {
