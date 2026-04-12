@@ -56,7 +56,7 @@ features = ["serde"]
 
 [dependencies.gnss-qc-traits]
 git = "https://github.com/nav-solutions/qc-traits"
-rev = "338857514973a8682d93be3a7b54bb3444eb8741"
+rev = "146b737342c2d4efe377ef4804fc0f5ab9b15d97"
 optional = true
 
 [dependencies]
