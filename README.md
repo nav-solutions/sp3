@@ -7,7 +7,7 @@
 [![crates.io](https://img.shields.io/crates/d/sp3.svg)](https://crates.io/crates/sp3)
 [![discord server](https://img.shields.io/discord/1342922474110586910?logo=discord)](https://discord.gg/EqhEBXBmJh)
 
-[![MRSV](https://img.shields.io/badge/MSRV-1.85.0-orange?style=for-the-badge)](https://github.com/rust-lang/rust/releases/tag/1.85.0)
+[![MRSV](https://img.shields.io/badge/MSRV-1.89.0-orange?style=for-the-badge)](https://github.com/rust-lang/rust/releases/tag/1.89.0)
 [![License](https://img.shields.io/badge/license-MPL_2.0-orange?style=for-the-badge&logo=mozilla)](https://github.com/nav-solutions/sp3/blob/main/LICENSE)
 
 SP3 Precise GNSS Orbit file parsing, analysis & production.  
