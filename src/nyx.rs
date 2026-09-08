@@ -169,7 +169,7 @@ impl SP3 {
         duration: Duration,
     ) -> Result<Box<dyn Iterator<Item = SpacecraftTrajectory> + '_>, PredictionError> {
         let orbital_model = OrbitalDynamics::point_masses(vec![MOON, SUN]);
-        let srp_model = SolarPressure::new(vec![EARTH_J2000], almanac.clone())?;
+        let srp_model = SolarPressure::new(vec![EARTH_J2000], &almanac)?;
 
         let dynamics = SpacecraftDynamics::from_model(orbital_model, srp_model);
 
