@@ -63,6 +63,7 @@ itertools = "0.14"
 log = { version = "0.4", optional = true }
 anise = { version = "0.10", optional = true }
 hifitime = { version = "4", features = ["serde", "std"] }
+hyperdual = "=1.4.0" # probleme release nyx
 nyx-space = { version = "2.3", optional = true }
 
 flate2 = { version = "1", optional = true, default-features = false, features = ["zlib"] }
@@ -70,4 +71,4 @@ serde = { version = "1.0", optional = true, default-features = false, features =
 
 [dev-dependencies]
 env_logger = "0.11"
-anise = { version = "0.9", features = ["embed_ephem"] }
+anise = { version = "0.10", features = ["embed_ephem"] }
