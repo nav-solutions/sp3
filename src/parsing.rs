@@ -153,6 +153,7 @@ impl SP3 {
                 if header.version == Version::A {
                     header.constellation = Constellation::GPS;
                     header.timescale = TimeScale::GPST;
+                    timescale = TimeScale::GPST;
                 } else {
                     // Constellation identification needs to pass
                     if pc_count == 0 {
@@ -236,13 +237,9 @@ impl SP3 {
                 }
 
                 let entry = VelocityEntry::parse(line, header.version)?;
-                let (sv, (vel_x_dm_s, vel_y_dm_s, vel_z_dm_s), clk_sub_ns) = entry.to_parts();
 
-                let (vel_x_km_s, vel_y_km_s, vel_z_km_s) = (
-                    vel_y_dm_s * 1.0E-4,
-                    vel_y_dm_s * 1.0E-4,
-                    vel_z_dm_s * 1.0E-4,
-                );
+                // VelocityEntry already converts dm/s to km/s
+                let (sv, (vel_x_km_s, vel_y_km_s, vel_z_km_s), clk_sub_ns) = entry.to_parts();
 
                 //TODO : move this into %c config frame
                 if !vehicles.contains(&sv) {
@@ -250,10 +247,16 @@ impl SP3 {
                 }
 
                 // verify entry validity
-                if vel_x_dm_s != 0.0_f64 && vel_y_dm_s != 0.0_f64 && vel_z_dm_s != 0.0_f64 {
+                if vel_x_km_s != 0.0_f64 && vel_y_km_s != 0.0_f64 && vel_z_km_s != 0.0_f64 {
                     let key = SP3Key { epoch, sv };
                     if let Some(e) = data.get_mut(&key) {
-                        *e = e.with_velocity_km_s((vel_x_km_s, vel_y_km_s, vel_z_km_s));
+                        // V lines do not have a prediction flag:
+                        // preserve the flag of the P line
+                        *e = if e.predicted_orbit {
+                            e.with_predicted_velocity_km_s((vel_x_km_s, vel_y_km_s, vel_z_km_s))
+                        } else {
+                            e.with_velocity_km_s((vel_x_km_s, vel_y_km_s, vel_z_km_s))
+                        };
 
                         if let Some(clk_sub_ns) = clk_sub_ns {
                             *e = e.with_clock_drift_ns(clk_sub_ns * 0.1);
