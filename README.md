@@ -112,6 +112,84 @@ assert_eq!(attributes.sampling_period, sp3.header.sampling_period);
 assert!(attributes.gzip_compressed);
 ```
 
+## Streaming (line by line) parsing
+
+`SP3::from_file` and similar methods allocate the complete file in memory.
+For constrained environments, or when you only need a subset of the content,
+use `SP3Stream`: the header is parsed first, then the file is iterated one data
+line at a time, nothing is retained. Each line is an `SP3Line`, that is
+one satellite at one epoch:
+
+- `SP3Line::Position`: ECEF coordinates (x, y, z) in km, clock offset in µs,
+and the maneuver / prediction flags
+- `SP3Line::Velocity`: ECEF velocity in km/s and clock drift in ns/s
+
+Epochs are expressed in the timescale defined in the header.
+
+```rust
+use sp3::prelude::*;
+
+let mut stream = SP3Stream::from_gzip_file(
+    "data/SP3/C/ESA0OPSRAP_20232390000_01D_15M_ORB.SP3.gz",
+).unwrap();
+
+// header is available right away
+assert_eq!(stream.header().agency, "ESOC");
+assert_eq!(stream.header().timescale, TimeScale::GPST);
+
+let g01 = SV::new(Constellation::GPS, 1);
+
+for line in stream.by_ref() {
+    // A malformed line is reported as an Err item,
+    // and the stream carries on with the next line.
+    let line = line.unwrap();
+
+    if let SP3Line::Position(state) = line {
+        if state.sv == g01 && state.has_valid_position() {
+            let (x_km, y_km, z_km) = state.position_km;
+            let epoch = state.epoch;
+            let clock_us = state.clock_us;
+        }
+    }
+}
+
+// Collecting the stream returns the complete (fully allocated) structure:
+// this is exactly what `SP3::from_gzip_file` does.
+let sp3 = SP3Stream::from_gzip_file(
+    "data/SP3/C/ESA0OPSRAP_20232390000_01D_15M_ORB.SP3.gz",
+).unwrap()
+.collect_sp3()
+.unwrap();
+
+assert_eq!(sp3.total_epochs(), 96);
+```
+
+`SP3Stream::new` accepts any `BufRead` implementation (in memory slice, socket,
+decompressor..). `SP3::insert_line` lets you build an `SP3` from a filtered stream:
+
+```rust
+use sp3::prelude::*;
+
+let stream = SP3Stream::from_file("data/SP3/D/example.txt")
+    .unwrap();
+
+let header = stream.header().clone();
+
+let mut gps_only = SP3 {
+    header,
+    ..Default::default()
+};
+
+for line in stream {
+    let line = line.unwrap();
+    if line.sv().constellation == Constellation::GPS {
+        gps_only.insert_line(line);
+    }
+}
+
+assert!(gps_only.satellites_iter().all(|sv| sv.constellation == Constellation::GPS));
+```
+
 ## Lib features
 
 This library comes with a few features

@@ -57,6 +57,8 @@ mod position;
 mod production;
 mod velocity;
 
+pub mod stream;
+
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -80,6 +82,7 @@ pub mod prelude {
         errors::{Error, FormattingError, ParsingError},
         header::{version::Version, DataType, Header, OrbitType},
         production::{Availability, ProductionAttributes, ReleaseDate, ReleasePeriod},
+        stream::{PositionLine, SP3Line, SP3Stream, VelocityLine},
         SP3Key, SP3,
     };
 
