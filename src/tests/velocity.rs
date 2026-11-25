@@ -28,7 +28,11 @@ fn rev_a_velocity_vectors() {
     // GPS orbital speed is about 3.9 km/s in inertial frame,
     // ECEF speed is smaller but within [1; 5] km/s.
     let norm = (vx * vx + vy * vy + vz * vz).sqrt();
-    assert!(norm > 1.0 && norm < 5.0, "unrealistic velocity norm {}", norm);
+    assert!(
+        norm > 1.0 && norm < 5.0,
+        "unrealistic velocity norm {}",
+        norm
+    );
 }
 
 #[test]
